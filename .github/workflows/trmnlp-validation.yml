@@ -1,7 +1,7 @@
 name: Weather Window trmnlp validation
 on:
   push:
-    branches: [main, feat/daylight-windows]
+    branches: [main, feat/weather-ribbon]
   workflow_dispatch:
 permissions:
   contents: read
@@ -64,6 +64,15 @@ jobs:
         run: |
           trmnlp build --png --width 1040 --height 780 --color-depth 4
           mv _build preview-x
+      - name: Expose Full previews for visual review
+        run: |
+          python3 - <<'PY'
+          import base64
+          from pathlib import Path
+          for device in ['og', 'x']:
+              path = Path('preview-' + device) / 'full.png'
+              print('PREVIEW_' + device.upper() + '=' + base64.b64encode(path.read_bytes()).decode())
+          PY
       - name: Save previews and diagnostics
         if: always()
         uses: actions/upload-artifact@v4

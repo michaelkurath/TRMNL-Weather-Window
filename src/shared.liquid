@@ -37,3 +37,43 @@
 <style>
 .ww-footnote { position: absolute; bottom: 38px; left: 16px; right: 16px; font-size: 12px; color: #000; }
 </style>
+
+{% template weather_ribbon %}
+<svg class="ww-ribbon" viewBox="0 0 960 330" role="img" aria-label="Hourly temperature and rain probability. Outlined region is the next window; hatched regions are night.">
+  <defs>
+    <pattern id="ww-night" width="8" height="8" patternUnits="userSpaceOnUse"><path d="M0 8L8 0" stroke="#999" stroke-width="1"/></pattern>
+  </defs>
+  <text x="40" y="20" font-size="17">{{ ribbon.range | escape }}</text>
+  {% for band in ribbon.nights %}<rect x="{{ band.x }}" y="32" width="{{ band.width }}" height="238" fill="url(#ww-night)"/>{% endfor %}
+  <text x="40" y="92" font-size="16">TEMPERATURE</text>
+  <text x="40" y="188" font-size="16">RAIN CHANCE · 0–100%</text>
+  <line x1="40" y1="260" x2="920" y2="260" stroke="black" stroke-width="1"/>
+  {% for bar in ribbon.bars %}
+    {% if bar.unknown %}<text x="{{ bar.x }}" y="250" font-size="16">?</text>
+    {% else %}<rect x="{{ bar.x }}" y="{{ bar.y }}" width="{{ bar.width }}" height="{{ bar.height }}" fill="black"/>{% endif %}
+  {% endfor %}
+  <path d="{{ ribbon.path }}" fill="none" stroke="black" stroke-width="3"/>
+  {% for tick in ribbon.labels %}
+    <g transform="translate({{ tick.x }}, 51)" fill="white" stroke="black" stroke-width="2">
+    {% if tick.icon == 'sun' %}
+    <circle cx="0" cy="0" r="8"/><path d="M0 -16v4M0 12v4M-16 0h4M12 0h4M-11 -11l3 3M8 8l3 3M-11 11l3 -3M8 -8l3 -3"/>
+    {% elsif tick.icon == 'unknown' %}
+    <text x="0" y="6" text-anchor="middle" fill="black" stroke="none" font-size="20">?</text>
+    {% else %}
+    <path d="M-13 5C-22 3 -20 -8 -11 -8C-10 -19 7 -19 9 -7C22 -9 24 6 13 6Z"/>
+    {% if tick.icon == 'rain' %}<path d="M-9 11l-3 6M1 11l-3 6M11 11l-3 6"/>{% endif %}
+    {% if tick.icon == 'storm' %}<path d="M2 9l-7 9h6l-5 8" fill="none"/>{% endif %}
+    {% if tick.icon == 'snow' %}<path d="M0 10v14M-6 13l12 8M6 13l-12 8"/>{% endif %}
+    {% endif %}
+    </g>
+    <text x="{{ tick.x }}" y="{{ tick.ty }}" text-anchor="middle" font-size="18">{{ tick.temperature | escape }}</text>
+    <text x="{{ tick.x }}" y="284" text-anchor="middle" font-size="18">{{ tick.time }}</text>
+    <text x="{{ tick.x }}" y="307" text-anchor="middle" font-size="16">{{ tick.day }}</text>
+  {% endfor %}
+  {% if ribbon.selection %}<rect x="{{ ribbon.selection.x }}" y="31" width="{{ ribbon.selection.width }}" height="237" rx="6" fill="none" stroke="black" stroke-width="4"/>{% endif %}
+  <text x="920" y="326" text-anchor="end" font-size="14">Outline: next window · Hatching: night</text>
+</svg>
+{% endtemplate %}
+<style>
+.ww-ribbon { display: block; width: 100%; height: auto; flex-shrink: 0; font-family: inherit; color: #000; }
+</style>

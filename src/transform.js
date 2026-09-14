@@ -44,7 +44,7 @@ function run(input, now = Date.now() / 1000) {
     const daylightKnown = daylight.some(d => dateKey(d.rise) === dateKey(start));
     const inDaylight = daylight.some(d => Math.max(start, now) >= d.rise && end <= d.set);
     const dry = known && p <= threshold && mm <= 0.1 && !storm;
-    rows.push({ start, end, p, t, w, known, dry, eligible: dry && (!daylightOnly || inDaylight), daylightKnown,
+    rows.push({ start, end, p, t, w, code, known, dry, eligible: dry && (!daylightOnly || inDaylight), daylightKnown,
       day: relativeDay(start), time: fmt(start), temperature: temp(t), wind: wind(w), probability: p === null ? '—' : `${Math.round(p)}%`,
       label: !known ? '?' : dry ? 'DRY' : storm ? 'STORM' : 'WET' });
   }
@@ -62,12 +62,14 @@ function run(input, now = Date.now() / 1000) {
   result.headline = 'No dry window found';
   result.window = 'Today / Tomorrow';
   result.detail = `No ${minimum}-hour ${daylightOnly ? 'daylight ' : ''}window meets your limits.${rows.some(r => !r.known || (daylightOnly && !r.daylightKnown)) ? ' Some data is missing.' : ''}`;
+  result.ribbon = weatherRibbon(rows, daylight, null, now, fmt, relativeDay, temp);
   if (!chosen) return result;
   const first = chosen[0], last = chosen[chosen.length - 1];
   const start = Math.max(now, first.start), end = last.end;
   const temperatures = chosen.map(r => r.t).filter(t => t !== null);
   const winds = chosen.map(r => r.w).filter(w => w !== null);
   result.hours = rows.filter(r => r.start >= first.start).slice(0, 12);
+  result.ribbon = weatherRibbon(rows, daylight, {start,end}, now, fmt, relativeDay, temp);
   result.found = true;
   result.headline = 'Next likely dry window';
   result.window = `${start === now ? 'Now' : fmt(start)}–${fmt(end)}`;
@@ -83,3 +85,40 @@ function run(input, now = Date.now() / 1000) {
   return result;
 }
 if (typeof module !== 'undefined') module.exports = { run };
+
+// Chart geometry uses the same Unix timestamps as window selection.
+// Coordinates are viewBox units; no smoothing or invented weather values.
+function weatherRibbon(rows, solar, selected, now, fmt, relativeDay, temp) {
+ if (!rows.length) return null;
+ const start=rows[0].start, end=rows[rows.length-1].end;
+ if (!(end>start)) return null;
+ const x=t=>Math.round((40+880*(t-start)/(end-start))*100)/100;
+ const temperatures=rows.map(r=>r.t).filter(t=>t!==null);
+ const lo=temperatures.length?Math.min(...temperatures):0, hi=temperatures.length?Math.max(...temperatures):1;
+ const y=t=>Math.round((155-55*(t-lo)/Math.max(4,hi-lo))*100)/100;
+ const step=Math.max(1,Math.ceil(rows.length/6));
+ const points=[], bars=[], labels=[], nights=[], events=[];
+ let previous=null;
+ for (let i=0;i<rows.length;i++) {
+  const r=rows[i];
+  if (r.t!==null) points.push((previous!==null&&previous===r.start?'L':'M')+x(r.start)+','+y(r.t));
+  previous=r.t===null?null:r.end;
+  const p=r.p!==null&&r.p>=0&&r.p<=100?r.p:null;
+  bars.push({x:x(r.start)+1,width:Math.max(1,x(r.end)-x(r.start)-2),y:p===null?260:260-p*.6,height:p===null?0:p*.6,unknown:p===null});
+  if(i%step===0) labels.push({x:x(r.start),time:fmt(r.start),day:relativeDay(r.start),temperature:temp(r.t),ty:r.t===null?135:y(r.t)-10,probability:p===null?'?':Math.round(p)+'%',icon:r.code===null?'unknown':r.code>=95?'storm':r.code>=71&&r.code<=77?'snow':r.code>=51?'rain':r.code===0?'sun':'cloud'});
+ }
+ // Only shade intervals on days with known sunrise and sunset.
+ for(const d of solar) {
+  const rise=d.rise,set=d.set;
+  const dayRows=rows.filter(r=>relativeDay(r.start)===relativeDay(rise));
+  if(!dayRows.length)continue;
+  for(const [a,b] of [[dayRows[0].start,rise],[set,dayRows[dayRows.length-1].end]]) {
+   const left=Math.max(start,a),right=Math.min(end,b);
+   if(right>left)nights.push({x:x(left),width:x(right)-x(left)});
+  }
+  for(const [t,label] of [[rise,'Sunrise'],[set,'Sunset']])if(t>=start&&t<=end)events.push({x:x(t),label});
+ }
+ return {path:points.join(' '),bars,labels,nights,events,
+  selection:selected?{x:x(selected.start),width:x(selected.end)-x(selected.start)}:null,
+  range:relativeDay(start)+' '+fmt(start)+' – '+relativeDay(end)+' '+fmt(end)};
+}

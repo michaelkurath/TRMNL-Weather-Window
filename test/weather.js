@@ -39,6 +39,18 @@ function checkWeather(run) {
  test('imperial units retained',()=>run(data,now).temperature.includes('68°F')&&run(data,now).wind.includes('mph'));
  data=fixture();data.hourly.precipitation.fill(2);
  test('rain amount excludes otherwise low probability',()=>!run(data,now).found);
+ data=fixture();now=stamp('2026-09-14T20:08:00Z');r=run(data,now);
+ test('ribbon selection has positive width',()=>r.ribbon.selection.width>0);
+ const first=data.hourly.time.find(t=>t+3600>now);
+ const final=stamp('2026-09-15T22:00:00Z');
+ const expected=40+880*(stamp('2026-09-15T06:00:00Z')-first)/(final-first);
+ test('ribbon selection aligns with actual start timestamp',()=>Math.abs(r.ribbon.selection.x-expected)<0.02);
+ test('night shading exists for overnight outlook',()=>r.ribbon.nights.length>0);
+ data=fixture();data.hourly.temperature_2m[22]=null;
+ r=run(data,now);
+ test('missing temperatures break line',()=>r.ribbon.path.split('M').length>=3);
+ data=fixture();data.hourly.precipitation_probability[23]=null;
+ test('missing rain remains unknown',()=>run(data,now).ribbon.bars.some(b=>b.unknown));
  return passed;
 }
 if(typeof module!=='undefined')module.exports={checkWeather};

@@ -14,12 +14,12 @@ Status: prototype. GitHub is the source of truth. Implement on a branch, validat
 
 Completed implementation checkboxes do not mean released. Initial checks ran in the available JavaScript runtime; Node/trmnlp execution is pending.
 
-## P1 — Full layout, OG and X (next)
-- [ ] Reduce excessive vertical whitespace while retaining one clear focus.
-- [ ] Increase hourly temperature/rain typography for X.
-- [ ] Replace repetitive DRY badges with a clearer timeline; preserve storm/unknown states.
+## P1 — Full layout, OG and X (implemented draft; visual review pending)
+- [x] Implement top-aligned Full layout and a two-row, six-column hourly outlook; visual acceptance pending.
+- [x] Add larger X typography for hourly rain/temperature and hero supporting text; visual acceptance pending.
+- [x] Full: use filled rain-percentage labels for dry hours; retain explicit wet/storm/unknown labels.
 - [ ] Confirm configured location appears in footer; verify custom field values reach transform.
-- [ ] Use Framework classes before CSS; replace absolute footnote positioning where feasible.
+- [x] Full: use Framework layout/grid/typography and move attribution into normal flow. Smaller-layout footnotes remain for P2.
 - [ ] Review screenshots for dry, wet, overnight, unavailable and long-location cases on OG and X.
 
 ## P2 — Smaller layouts and validation
@@ -44,3 +44,5 @@ With Node installed:
 ```sh
 node -e "console.log(require('./test/weather.js').checkWeather(require('./src/transform.js').run))"
 ```
+
+Full-layout verification matrix and remaining checks: [docs/layout-review.md](docs/layout-review.md).

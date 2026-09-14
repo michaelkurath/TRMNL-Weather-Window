@@ -1,0 +1,32 @@
+{% template title_bar %}
+<div class="title_bar"><span class="title">Weather Window</span><span class="instance">{{ location | escape }}</span></div>
+{% endtemplate %}
+{% template hero %}
+<div class="flex flex--col gap--small w--full">
+  <span class="label label--small 1bit:text--black">{{ headline | escape }}</span>
+  <span class="value {{ size }}">{{ window | escape }}</span>
+  {% if found %}
+  <span class="label">{{ date | escape }} · {{ risk | escape }}</span>
+  <span class="description">{{ temperature | escape }} · {{ wind | escape }}</span>
+  {% endif %}
+  <span class="label label--small 1bit:text--black">{{ detail | escape }}</span>
+</div>
+{% endtemplate %}
+{% template timeline %}
+<div class="flex flex--col gap--small w--full">
+  <span class="label label--small 1bit:text--black">NEXT HOURS · Rain probability</span>
+  <div class="grid grid--cols-{{ count }} gap--small w--full">
+  {% for hour in hours limit:count %}
+    <div class="flex flex--col gap--xsmall">
+      <span class="label label--small 1bit:text--black">{{ hour.time }}</span>
+      <span class="label {% if hour.dry %}label--inverted{% else %}label--outline{% endif %}">{{ hour.label }}</span>
+      <span class="label">{{ hour.probability }}</span>
+      <span class="label label--small 1bit:text--black">{{ hour.temperature }}</span>
+    </div>
+  {% endfor %}
+  </div>
+</div>
+{% endtemplate %}
+<style>
+.ww-footnote { position: absolute; bottom: 38px; left: 16px; right: 16px; font-size: 12px; color: #000; }
+</style>

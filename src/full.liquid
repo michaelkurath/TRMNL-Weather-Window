@@ -1,0 +1,6 @@
+<div class="layout layout--col layout--left gap--medium">
+{% render 'hero', headline: headline, window: window, found: found, date: date, risk: risk, temperature: temperature, wind: wind, detail: detail, size: 'value--large lg:value--xlarge' %}
+{% render 'timeline', hours: hours, count: 12 %}
+</div>
+<div class="ww-footnote">{{ updated | escape }} · {{ zone | escape }} · Open-Meteo (CC BY 4.0)</div>
+{% render 'title_bar', location: location %}

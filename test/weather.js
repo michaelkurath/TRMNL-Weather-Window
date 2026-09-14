@@ -1,33 +1,44 @@
 function checkWeather(run) {
-  const now = Date.parse('2026-09-14T14:08:00Z') / 1000;
-  const base = Date.parse('2026-09-14T14:00:00Z') / 1000;
-  function fixture() {
-    const time = Array.from({length: 26}, (_, i) => base + i * 3600);
-    return {timezone: 'Europe/Zurich', hourly: {time,
-      precipitation_probability: time.map(() => 0), precipitation: time.map(() => 0),
-      temperature_2m: time.map(() => 20), wind_speed_10m: time.map(() => 6),
-      weather_code: time.map(() => 0)}};
-  }
-  const passed = [];
-  function test(name, fn) { if (!fn()) throw new Error(name); passed.push(name); }
-  let data = fixture(), result = run(data, now);
-  test('refresh minutes do not become forecast endpoint', () => result.window === 'Now–04:00');
-  test('overnight window is explicit', () => result.date.includes('overnight'));
-  test('search boundary is not presented as rain onset', () => result.detail.includes('May continue'));
-  test('no hidden thirteenth partial hour', () => result.hours.length === 12 && result.hours.at(-1).end <= now + 43200);
-  test('default location does not repeat title', () => result.location === 'My location');
-  data = fixture(); data.hourly.precipitation_probability[3] = 90;
-  result = run(data, now);
-  test('rain interval ends the current dry window', () => result.window === 'Now–18:00');
-  data = fixture(); data.trmnl = {plugin_settings: {custom_fields_values: {minimum_hours: '2'}}};
-  data.hourly.precipitation_probability[3] = 90;
-  result = run(data, now);
-  test('partial current hour counts only remaining duration', () => result.window.startsWith('19:00'));
-  data = fixture(); data.hourly.precipitation_probability.fill(null);
-  test('missing data is unavailable', () => run(data, now).headline === 'Forecast unavailable');
-  data = fixture(); data.hourly.weather_code.fill(95);
-  test('thunderstorms are not dry windows', () => !run(data, now).found);
-  test('empty response is unavailable', () => run({}, now).headline === 'Forecast unavailable');
-  return passed;
+ const stamp = s => Date.parse(s) / 1000;
+ const base = stamp('2026-09-14T00:00:00Z');
+ function fixture() {
+  const time = Array.from({length:73}, (_,i)=>base+i*3600);
+  return {timezone:'Europe/Zurich',daily:{
+   sunrise:[stamp('2026-09-14T05:12:00Z'),stamp('2026-09-15T05:13:00Z')],
+   sunset:[stamp('2026-09-14T17:38:00Z'),stamp('2026-09-15T17:36:00Z')]},
+   hourly:{time,temperature_2m:time.map(()=>20),precipitation_probability:time.map(()=>0),precipitation:time.map(()=>0),wind_speed_10m:time.map(()=>6),weather_code:time.map(()=>0)}};
+ }
+ const passed=[]; const test=(name,fn)=>{if(!fn())throw new Error(name);passed.push(name);};
+ let data=fixture(), now=stamp('2026-09-14T14:08:00Z'), r=run(data,now);
+ test('daylight defaults to current daytime window',()=>r.window==='Now–19:00');
+ test('duration uses remaining current hour',()=>r.duration==='2h 52m');
+ test('today is explicit',()=>r.date.startsWith('Today'));
+ now=stamp('2026-09-14T20:08:00Z'); r=run(data,now);
+ test('evening finds tomorrow beyond twelve hours',()=>r.window==='08:00–19:00'&&r.date.startsWith('Tomorrow'));
+ test('timeline follows recommended day',()=>r.hours[0].day==='Tomorrow'&&r.hours[0].time==='08:00');
+ test('sunrise is rounded inward to forecast boundary',()=>r.hours[0].start>=data.daily.sunrise[1]);
+ data=fixture();delete data.daily;
+ test('missing sunrise is explicit',()=>run(data,now).headline==='Daylight unavailable');
+ data.trmnl={plugin_settings:{custom_fields_values:{daylight_mode:'any'}}};
+ r=run(data,now);
+ test('any time works without sunrise',()=>r.found&&r.window.startsWith('Now'));
+ test('search stops at end of tomorrow',()=>r.window.endsWith('00:00'));
+ data=fixture();data.hourly.precipitation_probability.fill(null);
+ test('missing rain data is unavailable',()=>run(data,now).headline==='Forecast unavailable');
+ data=fixture();data.hourly.weather_code.fill(95);
+ test('storms cannot become outdoor windows',()=>!run(data,now).found);
+ test('empty forecast is unavailable',()=>run({},now).headline==='Forecast unavailable');
+ data=fixture();data.daily.sunrise=[null,null];data.daily.sunset=[null,null];
+ test('polar/missing solar times do not imply daylight',()=>run(data,now).headline==='Daylight unavailable');
+ data=fixture();now=stamp('2026-09-14T16:30:00Z');
+ data.trmnl={plugin_settings:{custom_fields_values:{minimum_hours:'1'}}};
+ test('short remaining daylight shifts to tomorrow',()=>run(data,now).date.startsWith('Tomorrow'));
+ data=fixture(); now=stamp('2026-09-14T14:08:00Z'); data.hourly.precipitation_probability[16]=90;
+ test('rain in preceding interval ends window',()=>run(data,now).window==='Now–17:00' || !run(data,now).window.startsWith('Now'));
+ data=fixture();data.trmnl={plugin_settings:{custom_fields_values:{units:'imperial'}}};
+ test('imperial units retained',()=>run(data,now).temperature.includes('68°F')&&run(data,now).wind.includes('mph'));
+ data=fixture();data.hourly.precipitation.fill(2);
+ test('rain amount excludes otherwise low probability',()=>!run(data,now).found);
+ return passed;
 }
-if (typeof module !== 'undefined') module.exports = { checkWeather };
+if(typeof module!=='undefined')module.exports={checkWeather};

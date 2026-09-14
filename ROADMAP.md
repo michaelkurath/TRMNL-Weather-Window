@@ -16,7 +16,7 @@ Product principles:
 ## Current status — 14 September 2026
 PR [#1](https://github.com/michaelkurath/TRMNL-Weather-Window/pull/1) merged at explicit user request.
 TRMNL synchronization and live-device behavior are not yet confirmed.
-Ten deterministic JavaScript regression checks passed in the available runtime. Node/trmnlp execution and OG/X screenshot review remain outstanding.
+Baseline Node regression tests and trmnlp OG/X renders ran successfully via GitHub Actions. Live polling returned HTTP 200 and the user confirmed recovery. Visual screenshot inspection is still pending; artifact download alone is not visual review.
 
 ### Implemented
 - [x] Four initial layouts and configurable location, rain limit, duration and units.
@@ -69,11 +69,12 @@ Acceptance: a failed update cannot make old or absent data appear current.
 ## M2 — Useful outdoor windows
 
 ### WW-04: Daylight-aware planning
-- [ ] Add “Daylight only” / “Any time” preference; proposed default: daylight only.
-- [ ] Evaluate sunrise/sunset data and define treatment of windows crossing those boundaries.
-- [ ] Handle no sunrise/sunset and missing daylight data explicitly.
-- [ ] Search through tomorrow, with a documented maximum horizon, so evening use can offer tomorrow morning.
-- [ ] Show Today / Tomorrow where helpful; retain dates for clarity.
+- [x] Add Daylight only / Any time; default daylight.
+- [x] Use numeric sunrise/sunset epochs; only include forecast intervals wholly within daylight (remaining portion for the current hour).
+- [x] Missing/unusable solar times show Daylight unavailable; no silent nighttime fallback. Polar daylight support remains deferred.
+- [x] Search through the end of tomorrow in the forecast timezone; fetch three days to include the final interval endpoint.
+- [x] Today/Tomorrow labels and duration; timeline follows the selected window.
+- [ ] Inspect OG/X screenshots and verify daylight behavior on a live device.
 Acceptance: nighttime is not recommended in daylight mode; missing daylight data is not silently treated as daylight.
 
 ### WW-05: Next versus best window

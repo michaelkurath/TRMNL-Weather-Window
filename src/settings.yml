@@ -6,7 +6,7 @@ static_data: ''
 polling_verb: get
 framework_version: 3.3.1
 serverless_language: node
-polling_url: 'https://api.open-meteo.com/v1/forecast?latitude={{ lat_lon | split: '','' | first | strip }}&longitude={{ lat_lon | split: '','' | last | strip }}&hourly=temperature_2m,precipitation_probability,precipitation,wind_speed_10m,weather_code&timezone=auto&timeformat=unixtime&forecast_days=2'
+polling_url: 'https://api.open-meteo.com/v1/forecast?latitude={{ lat_lon | split: '','' | first | strip }}&longitude={{ lat_lon | split: '','' | last | strip }}&hourly=temperature_2m,precipitation_probability,precipitation,wind_speed_10m,weather_code&daily=sunrise,sunset&timezone=auto&timeformat=unixtime&forecast_days=3'
 polling_headers: ''
 polling_body: ''
 id: 477509
@@ -41,6 +41,14 @@ custom_fields:
   name: Display name (optional)
   description: A short name for the footer, for example Russikon or Home. This does not change the forecast location.
   optional: true
+- keyname: daylight_mode
+  field_type: select
+  name: Outdoor hours
+  description: Daylight only uses forecast hours between sunrise and sunset.
+  options:
+  - Daylight only: daylight
+  - Any time: any
+  default: daylight
 - keyname: rain_limit
   field_type: select
   name: Maximum rain probability

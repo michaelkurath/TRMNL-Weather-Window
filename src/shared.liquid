@@ -14,10 +14,11 @@
 {% endtemplate %}
 {% template timeline %}
 <div class="flex flex--col gap--small w--full">
-  <span class="label label--small 1bit:text--black">{% if expanded %}HOURLY OUTLOOK · Rain probability · Filled = likely dry{% else %}NEXT HOURS · Rain probability{% endif %}</span>
+  <span class="label label--small 1bit:text--black">{% if expanded %}HOURLY OUTLOOK · Rain probability · Filled = likely dry{% else %}HOURLY OUTLOOK · Rain probability{% endif %}</span>
   <div class="grid grid--cols-{{ columns | default: count }} {% if expanded %}gap--medium lg:gap--large{% else %}gap--small{% endif %} w--full">
   {% for hour in hours limit:count %}
     <div class="flex flex--col gap--xsmall">
+      <span class="label label--small 1bit:text--black">{{ hour.day | escape }}</span>
       <span class="label label--small {% if expanded %}lg:text--large{% endif %} 1bit:text--black">{{ hour.time | escape }}</span>
       {% if expanded %}
       <span class="label {% if hour.dry %}label--inverted{% else %}label--outline{% endif %} text--large lg:text--xlarge">{{ hour.probability | escape }}</span>

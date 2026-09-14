@@ -6,8 +6,7 @@ static_data: ''
 polling_verb: get
 framework_version: 3.3.1
 serverless_language: node
-polling_url: >-
-  https://api.open-meteo.com/v1/forecast?latitude={{ lat_lon | split: ',' | first | strip }}&longitude={{ lat_lon | split: ',' | last | strip }}&hourly=temperature_2m,precipitation_probability,precipitation,wind_speed_10m,weather_code&timezone=auto&timeformat=unixtime&forecast_days=2
+polling_url: 'https://api.open-meteo.com/v1/forecast?latitude={{ lat_lon | split: '','' | first | strip }}&longitude={{ lat_lon | split: '','' | last | strip }}&hourly=temperature_2m,precipitation_probability,precipitation,wind_speed_10m,weather_code&timezone=auto&timeformat=unixtime&forecast_days=2'
 polling_headers: ''
 polling_body: ''
 id: 477509

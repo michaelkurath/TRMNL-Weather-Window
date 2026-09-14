@@ -104,9 +104,13 @@ Acceptance: a user can identify when to go and the main tradeoff within a few se
 - [ ] Normalize all thresholds in one internal unit system.
 Acceptance: switching activity makes an explainable difference; presets are preferences, not safety guidance.
 
-### WW-08: Low-friction setup and language
-- [ ] Clear location instructions and sensible label fallback.
-- [ ] Validate coordinates; investigate place lookup only if the settings flow supports it simply.
+### WW-08: Low-friction setup and language — location setup promoted to P1
+- [x] Implement native TRMNL location autocomplete for towns, addresses and postcodes; no manual coordinates required.
+- [x] Feed the selected location into the existing Open-Meteo polling URL.
+- [x] Keep the footer display name optional and explain that it does not change the forecast location.
+- [ ] Validate autocomplete and polling URL interpolation in TRMNL, including ambiguous towns and postcodes.
+- [ ] Existing instances: select and save a location once after updating.
+- [ ] Investigate whether TRMNL exposes the selected friendly place name for an automatic footer label; do not infer it from coordinates.
 - [ ] Metric/imperial settings behave consistently throughout.
 - [ ] English and German labels; locale-aware time/date presentation.
 - [ ] Separate translated text from selection logic.
@@ -159,7 +163,7 @@ When an issue appears, record expected behavior, actual behavior, fixture/screen
 Keep fixes ahead of features; update this file with each meaningful batch.
 
 ## Immediate work order
-1. WW-01: verify the merged Full layout and live settings.
+1. WW-08 + WW-01: validate native location search, selected forecast location, and merged Full layout.
 2. WW-02/03: close data correctness and freshness gaps.
 3. WW-04: daylight-aware Today/Tomorrow windows.
 4. WW-05/06: understandable selection and timeline.

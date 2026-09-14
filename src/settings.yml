@@ -1,0 +1,71 @@
+---
+strategy: polling
+no_screen_padding: 'no'
+dark_mode: 'no'
+static_data: ''
+polling_verb: get
+framework_version: 3.3.1
+serverless_language: node
+polling_url: https://api.open-meteo.com/v1/forecast?latitude={{ latitude }}&longitude={{ longitude }}&hourly=temperature_2m,precipitation_probability,precipitation,wind_speed_10m,weather_code&timezone=auto&timeformat=unixtime&forecast_days=2
+polling_headers: ''
+polling_body: ''
+id: 477509
+oauth_enabled: 'false'
+oauth_pkce_enabled: 'no'
+oauth_authorize_url: ''
+oauth_token_url: ''
+oauth_scopes: ''
+oauth_scope_separator: ''
+oauth_refresh_url: ''
+oauth_auth_params: ''
+oauth_token_headers: ''
+oauth_token_site: ''
+oauth_token_params: ''
+oauth_token_request_auth_method: ''
+oauth_body_format: ''
+oauth_token_response_metadata: ''
+oauth_authorization_method: ''
+oauth_refresh_params: ''
+oauth_token_field_name: ''
+oauth_expiry_field_name: ''
+oauth_expiry_strategy: ''
+oauth_fixed_expiry_ms: ''
+custom_fields:
+- keyname: location_name
+  field_type: string
+  name: Location label
+  default: My location
+- keyname: latitude
+  field_type: number
+  name: Latitude
+  default: '47.4'
+- keyname: longitude
+  field_type: number
+  name: Longitude
+  default: '8.8'
+- keyname: rain_limit
+  field_type: select
+  name: Maximum rain probability
+  options:
+  - 10%: '10'
+  - 20%: '20'
+  - 30%: '30'
+  default: '20'
+- keyname: minimum_hours
+  field_type: select
+  name: Minimum dry window
+  options:
+  - 1 hour: '1'
+  - 2 hours: '2'
+  - 3 hours: '3'
+  default: '1'
+- keyname: units
+  field_type: select
+  name: Units
+  options:
+  - Celsius / km/h: metric
+  - Fahrenheit / mph: imperial
+  default: metric
+name: Weather Window
+description: Find your next likely dry hour.
+refresh_interval: 30

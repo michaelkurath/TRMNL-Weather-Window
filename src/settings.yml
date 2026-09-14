@@ -6,7 +6,8 @@ static_data: ''
 polling_verb: get
 framework_version: 3.3.1
 serverless_language: node
-polling_url: https://api.open-meteo.com/v1/forecast?latitude={{ latitude }}&longitude={{ longitude }}&hourly=temperature_2m,precipitation_probability,precipitation,wind_speed_10m,weather_code&timezone=auto&timeformat=unixtime&forecast_days=2
+polling_url: >-
+  https://api.open-meteo.com/v1/forecast?latitude={{ lat_lon | split: ',' | first | strip }}&longitude={{ lat_lon | split: ',' | last | strip }}&hourly=temperature_2m,precipitation_probability,precipitation,wind_speed_10m,weather_code&timezone=auto&timeformat=unixtime&forecast_days=2
 polling_headers: ''
 polling_body: ''
 id: 477509
@@ -31,18 +32,16 @@ oauth_expiry_field_name: ''
 oauth_expiry_strategy: ''
 oauth_fixed_expiry_ms: ''
 custom_fields:
+- keyname: lat_lon
+  field_type: lat_lon
+  name: Location
+  description: Search for your town or postcode, then select the correct match.
+  description-de: Suche deinen Ort oder deine Postleitzahl und wähle den passenden Treffer.
 - keyname: location_name
   field_type: string
-  name: Location label
-  default: My location
-- keyname: latitude
-  field_type: number
-  name: Latitude
-  default: '47.4'
-- keyname: longitude
-  field_type: number
-  name: Longitude
-  default: '8.8'
+  name: Display name (optional)
+  description: A short name for the footer, for example Russikon or Home. This does not change the forecast location.
+  optional: true
 - keyname: rain_limit
   field_type: select
   name: Maximum rain probability

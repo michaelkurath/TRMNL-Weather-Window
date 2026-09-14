@@ -12,7 +12,7 @@ function run(input, now = Date.now() / 1000) {
   const day = (t) => new Intl.DateTimeFormat('en-GB', { timeZone: zone, day: '2-digit', month: 'short' }).format(new Date(t * 1000));
   const temp = (n) => n === null ? '—' : `${Math.round(imperial ? n * 9 / 5 + 32 : n)}°${imperial ? 'F' : 'C'}`;
   const wind = (n) => n === null ? '—' : `${Math.round(imperial ? n / 1.609344 : n)} ${imperial ? 'mph' : 'km/h'}`;
-  const result = { location: String(fields.location_name || 'Weather Window').slice(0, 35), zone,
+  const result = { location: String(fields.location_name || 'My location').slice(0, 35), zone,
     headline: 'Forecast unavailable', window: 'Try again later', detail: 'No usable hourly forecast.',
     hours: [], found: false, updated: `Checked ${day(now)} ${fmt(now)}`, threshold, minimum };
   const h = input.hourly;
@@ -20,14 +20,14 @@ function run(input, now = Date.now() / 1000) {
   const rows = [];
   for (let i = 1; i < h.time.length; i++) {
     const end = number(h.time[i]), start = number(h.time[i - 1]);
-    if (end === null || start === null || end - start !== 3600 || end <= now || start >= now + 12 * 3600) continue;
+    if (end === null || start === null || end - start !== 3600 || end <= now || end > now + 12 * 3600) continue;
     const p = number(h.precipitation_probability?.[i]), mm = number(h.precipitation?.[i]);
     const t = number(h.temperature_2m?.[i - 1]), w = number(h.wind_speed_10m?.[i - 1]);
     const code = number(h.weather_code?.[i - 1]), nextCode = number(h.weather_code?.[i]);
     const known = p !== null && p >= 0 && p <= 100 && mm !== null && mm >= 0 && code !== null && nextCode !== null;
     const storm = code >= 95 || nextCode >= 95;
     const dry = known && p <= threshold && mm <= 0.1 && !storm;
-    rows.push({ start, end: Math.min(end, now + 12 * 3600), p, t, w, known, dry,
+    rows.push({ start, end, p, t, w, known, dry,
       time: fmt(start), temperature: temp(t), wind: wind(w), probability: p === null ? '—' : `${Math.round(p)}%`,
       label: !known ? '?' : dry ? 'DRY' : storm ? 'STORM' : 'WET' });
   }
@@ -53,11 +53,13 @@ function run(input, now = Date.now() / 1000) {
   result.found = true;
   result.headline = 'Next likely dry window';
   result.window = `${start === now ? 'Now' : fmt(start)}–${fmt(end)}`;
-  result.date = day(start) === day(end) ? day(start) : `${day(start)}–${day(end)}`;
+  result.date = day(start) === day(end) ? day(start) : `${day(start)}–${day(end)} (overnight)`;
   result.temperature = temperatures.length ? `${temp(Math.min(...temperatures))}–${temp(Math.max(...temperatures))}` : 'Temperature unavailable';
   result.wind = winds.length ? `Wind up to ${wind(Math.max(...winds))}` : 'Wind unavailable';
   result.risk = `Rain risk ≤${Math.max(...chosen.map(r => r.p))}%`;
-  result.detail = 'Hourly estimate · Conditions may change';
+  result.detail = last === rows[rows.length - 1]
+    ? 'Dry through shown forecast · May continue beyond it'
+    : 'Hourly estimate · Conditions may change';
   return result;
 }
 if (typeof module !== 'undefined') module.exports = { run };

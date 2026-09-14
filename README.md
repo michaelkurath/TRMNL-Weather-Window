@@ -17,3 +17,7 @@ trmnlp serve
 ### Discoverability
 
 Add the `trmnl` topic to this repo so other TRMNL plugin builders can find it.
+
+### Development status
+
+See [ROADMAP.md](ROADMAP.md) for priorities, validation gates and regression test instructions.

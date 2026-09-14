@@ -1,7 +1,7 @@
 name: Weather Window trmnlp validation
 on:
   push:
-    branches: [main]
+    branches: [main, feat/daylight-windows]
   workflow_dispatch:
 permissions:
   contents: read
@@ -49,9 +49,9 @@ jobs:
         run: |
           ruby -ryaml -rjson -e '
             settings = YAML.load_file("src/settings.yml")
-            base = (Time.now.to_i / 3600) * 3600
-            times = (0..25).map { |i| base + i * 3600 }
-            data = {"timezone"=>"Europe/Zurich", "hourly"=>{"time"=>times, "temperature_2m"=>times.map{20}, "precipitation_probability"=>times.map{0}, "precipitation"=>times.map{0}, "wind_speed_10m"=>times.map{6}, "weather_code"=>times.map{0}}}
+            base = (Time.now.to_i / 86400) * 86400
+            times = (0..72).map { |i| base + i * 3600 }
+            data = {"timezone"=>"UTC", "daily"=>{"sunrise"=>(0..2).map{|i| base+i*86400+6*3600}, "sunset"=>(0..2).map{|i| base+i*86400+18*3600}}, "hourly"=>{"time"=>times, "temperature_2m"=>times.map{20}, "precipitation_probability"=>times.map{0}, "precipitation"=>times.map{0}, "wind_speed_10m"=>times.map{6}, "weather_code"=>times.map{0}}}
             settings["strategy"] = "static"
             settings["static_data"] = JSON.generate(data)
             File.write("src/settings.yml", YAML.dump(settings))

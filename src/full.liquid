@@ -1,7 +1,7 @@
 <div class="layout layout--col layout--top gap--medium lg:gap--large">
 {% render 'hero', headline: headline, window: window, found: found, date: date, risk: risk, temperature: temperature, wind: wind, detail: detail, size: 'value--large lg:value--xlarge', expanded: true %}
-{% if hours.size > 0 %}
-{% render 'timeline', hours: hours, count: 12, columns: 6, expanded: true %}
+{% if ribbon %}
+{% render 'weather_ribbon', ribbon: ribbon %}
 {% endif %}
 <div class="w--full">
   <span class="label label--small 1bit:text--black">{{ updated | escape }} · {{ zone | escape }} · Open-Meteo (CC BY 4.0)</span>

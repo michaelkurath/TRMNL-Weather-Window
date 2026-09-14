@@ -175,3 +175,6 @@ With Node installed:
 ```sh
 node -e "console.log(require('./test/weather.js').checkWeather(require('./src/transform.js').run))"
 ```
+
+## WW-06 implementation update
+Full now uses a timestamp-aligned SVG weather ribbon: weather-code icons, temperature line with missing-value gaps, 0–100% rain bars, known night shading and an exact next-window outline. Smaller views retain compact timelines. Chart geometry is computed in the transform. Tests cover time alignment and missing data; OG/X rendering and visual review use the CI workflow.

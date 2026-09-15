@@ -15,7 +15,7 @@
   </div>
   <div class="ww-reason">{{ detail | escape }}</div>
   {% if ribbon %}
-  <svg class="ww-outlook" viewBox="0 0 960 360" role="img" aria-label="Hourly temperature and rain probability. Black top bar marks the recommended dry window. Bottom patterned strip marks night. Triangle marks now.">
+  <svg class="ww-outlook" viewBox="0 0 960 360" preserveAspectRatio="none" role="img" aria-label="Hourly temperature and rain probability. Black top bar marks the recommended dry window. Bottom patterned strip marks night. Triangle marks now.">
     <defs><pattern id="ww-full-night" width="8" height="8" patternUnits="userSpaceOnUse"><path d="M0 8L8 0" stroke="black" stroke-width="1"/></pattern></defs>
     <text x="40" y="22" font-size="20" font-weight="700">{% if found %}LIKELY DRY{% else %}HOURLY OUTLOOK{% endif %}</text>
     <text x="920" y="22" text-anchor="end" font-size="18">{{ ribbon.period | escape }}</text>
@@ -48,17 +48,17 @@
 </div>
 {% render 'title_bar', location: location %}
 <style>
-  .ww-full { display:flex; flex-direction:column; align-items:stretch; justify-content:flex-start; gap:10px; padding:20px 24px 12px; font-family:Arial,Helvetica,sans-serif; color:#000; }
+  .ww-full { container-type:inline-size; display:flex; flex-direction:column; align-items:stretch; justify-content:flex-start; gap:8px; padding:14px 20px 10px; font-family:Arial,Helvetica,sans-serif; color:#000; }
   .ww-heading { display:flex; justify-content:space-between; align-items:center; gap:24px; }
   .ww-decision { min-width:0; }
   .ww-eyebrow { font-size:15px; font-weight:700; }
-  .ww-time { font-size:58px; line-height:1.08; font-weight:700; letter-spacing:-2px; white-space:nowrap; margin:4px 0; }
+  .ww-time { font-size:50px; line-height:1; font-weight:700; letter-spacing:-2px; white-space:nowrap; margin:4px 0; }
   .ww-time--message { font-size:34px; white-space:normal; letter-spacing:-1px; }
   .ww-date { font-size:16px; }
   .ww-conditions { border-left:2px solid #000; padding-left:20px; font-size:16px; line-height:1.6; flex-shrink:0; max-width:43%; }
   .ww-condition-main { font-size:24px; font-weight:700; }
-  .ww-reason { font-size:15px; padding-bottom:10px; border-bottom:2px solid #000; }
+  .ww-reason { font-size:15px; padding-bottom:6px; border-bottom:2px solid #000; }
   .ww-outlook { display:block; width:100%; min-height:0; flex:1 1 auto; font-family:Arial,Helvetica,sans-serif; overflow:visible; }
   .ww-source { margin-top:auto; font-size:11px; }
-  @media(min-width:1000px) { .ww-full { gap:18px; padding:28px 32px 18px; } .ww-time { font-size:80px; } .ww-time--message { font-size:44px; } .ww-eyebrow,.ww-date,.ww-reason,.ww-conditions { font-size:20px; } .ww-condition-main { font-size:30px; } .ww-source { font-size:14px; } }
+  @container(min-width:900px) { .ww-time { font-size:76px; } .ww-time--message { font-size:44px; } .ww-eyebrow,.ww-date,.ww-reason,.ww-conditions { font-size:20px; } .ww-condition-main { font-size:30px; } .ww-source { font-size:14px; } }
 </style>

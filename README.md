@@ -5,6 +5,13 @@ A [TRMNL](https://trmnl.com) plugin for ePaper displays, connected by
 
 <img width="150" alt="image" src="https://trmnl.com/images/brand/badges/light/works-with-trmnl/trmnl-badge-works-with-light.svg" />
 
+### Import ZIP
+
+Run `bin/package.sh` to create `dist/weather-window.zip`. The archive contains
+`settings.yml`, all four Liquid layouts, `shared.liquid` and `transform.js`
+directly at its root. CI verifies the exact manifest and archive integrity on
+every pull request, preventing the earlier missing-`settings.yml` package.
+
 ### Develop locally
 
 Templates and settings live in [`src/`](src/), ready for [trmnlp](https://github.com/usetrmnl/trmnlp):
@@ -12,6 +19,7 @@ Templates and settings live in [`src/`](src/), ready for [trmnlp](https://github
 ```sh
 gem install trmnl_preview
 trmnlp serve
+bin/package.sh
 ```
 
 ### Discoverability

@@ -132,9 +132,9 @@ Acceptance: each view remains useful without squeezing Full into less space.
 ### WW-10: Reproducible development and packaging
 - [x] Restore/extend sample fixtures and reproducible trmnlp rendering.
 - [x] Add automated forecast validation to CI.
-- [ ] Add import ZIP generation with settings.yml at archive root and verify archive contents.
-- [ ] Keep candidate UI changes on branches; review screenshots before routine merges.
-- [ ] Record test commands, source revision and known limitations in PRs.
+- [x] Add import ZIP generation with settings.yml at archive root and verify archive contents.
+- [x] Keep candidate UI changes on branches; review screenshots before routine merges.
+- [x] Record test commands, source revision and known limitations in PRs.
 Acceptance: another contributor can reproduce tests and import a known version.
 
 ### WW-11: Documentation and release review
@@ -175,6 +175,9 @@ With Node installed:
 ```sh
 node -e "console.log(require('./test/weather.js').checkWeather(require('./src/transform.js').run))"
 ```
+
+## WW-10 implementation update
+`bin/package.sh` builds a verified TRMNL import ZIP from the seven required files in `src/`. The manifest must contain `settings.yml`, all four layouts, `shared.liquid` and `transform.js` directly at archive root; extra paths or missing files fail CI. The ZIP is saved with every workflow artifact.
 
 ## WW-09 implementation update
 Half Horizontal, Half Vertical and Quadrant use dedicated compact SVG strips derived from the same timestamp geometry as Full. They retain the selected-window outline, temperature trend, rain bars and night hatching without shrinking the full chart. Compact attribution participates in normal flow instead of absolute positioning. CI renders all four layouts for OG and X. A reproducible eight-state stress matrix covers realistic weather, long Imperial content, no window, incomplete and insufficient data, outdated coverage, missing daylight and service errors.

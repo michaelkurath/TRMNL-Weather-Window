@@ -106,6 +106,10 @@ function checkWeather(run) {
  test('no-window explanation identifies precipitation amount',()=>!r.found&&r.reason.includes('Precipitation amount'));
  data=fixture();data.trmnl={plugin_settings:{custom_fields_values:{daylight_mode:'any',minimum_hours:'2'}}};for(let i=15;i<data.hourly.time.length;i+=2)data.hourly.precipitation_probability[i]=80;r=run(data,now);
  test('fragmented dry periods explain minimum duration',()=>!r.found&&r.reason.includes('shorter than 2 hours'));
+ data=fixture();data.trmnl={plugin_settings:{custom_fields_values:{daylight_mode:'any'}}};now=stamp('2026-09-14T08:00:00Z');r=run(data,now);
+ test('long dry windows keep current context instead of scrolling to their end',()=>r.ribbon.nowX===40);
+ test('chart period describes actual displayed endpoints',()=>r.ribbon.period==='Today 10:00 – Tomorrow 10:00');
+ test('rain labels stay above bars and below lane heading',()=>r.ribbon.labels.every(t=>t.rainLabelY>=230&&t.rainLabelY<=290));
  return passed;
 }
 if(typeof module!=='undefined')module.exports={checkWeather};

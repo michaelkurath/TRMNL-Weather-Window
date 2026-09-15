@@ -55,7 +55,7 @@
   {% endfor %}
   <path d="{{ ribbon.path }}" fill="none" stroke="black" stroke-width="3.5" stroke-linejoin="round"/>
   {% for tick in ribbon.labels %}
-    <g transform="translate({{ tick.x }}, 51)" fill="white" stroke="black" stroke-width="2">
+    {% unless tick.icon == 'none' %}<g transform="translate({{ tick.x }}, 51)" fill="white" stroke="black" stroke-width="2">
     {% if tick.icon == 'sun' %}
     <circle cx="0" cy="0" r="8"/><path d="M0 -16v4M0 12v4M-16 0h4M12 0h4M-11 -11l3 3M8 8l3 3M-11 11l3 -3M8 -8l3 -3"/>
     {% elsif tick.icon == 'unknown' %}
@@ -66,7 +66,7 @@
     {% if tick.icon == 'storm' %}<path d="M2 9l-7 9h6l-5 8" fill="none"/>{% endif %}
     {% if tick.icon == 'snow' %}<path d="M0 10v14M-6 13l12 8M6 13l-12 8"/>{% endif %}
     {% endif %}
-    </g>
+    </g>{% endunless %}
     <text x="{{ tick.x }}" y="{{ tick.ty }}" text-anchor="middle" font-size="17">{{ tick.temperature | escape }}</text>
     <text x="{{ tick.x }}" y="285" text-anchor="middle" font-size="17">{{ tick.time }}</text>
   {% endfor %}

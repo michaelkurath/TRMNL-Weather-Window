@@ -32,7 +32,7 @@ function run(input, now = Date.now() / 1000) {
   const result = { location: String(fields.location_name || 'My location').slice(0, 35), zone,
     headline: 'Forecast unavailable', window: 'Try again later', detail: 'No usable hourly forecast.',
     hours: [], found: false, state: 'unavailable', checkedAt: now, modelIssuedAt: null,
-    updated: `Checked ${day(now)} ${fmt(now)}`, threshold, minimum };
+    updated: `Checked ${day(now)} ${fmt(now)}`, threshold, minimum, selectionMode: 'next', reason: null };
   const h = input.hourly;
   if (input.error) {
     result.state = 'service_error';
@@ -72,7 +72,7 @@ function run(input, now = Date.now() / 1000) {
     const daylightKnown = daylight.some(d => dateKey(d.rise) === dateKey(start));
     const inDaylight = daylight.some(d => Math.max(start, now) >= d.rise && end <= d.set);
     const dry = known && p <= threshold && mm <= 0.1 && !storm;
-    rows.push({ start, end, p, t, w, code, known, dry, eligible: dry && (!daylightOnly || inDaylight), daylightKnown,
+    rows.push({ start, end, p, mm, t, w, code, storm, known, dry, inDaylight, eligible: dry && (!daylightOnly || inDaylight), daylightKnown,
       day: relativeDay(start), time: fmt(start), temperature: temp(t), wind: wind(w), probability: p === null ? '—' : `${Math.round(p)}%`,
       label: !known ? '?' : dry ? 'DRY' : storm ? 'STORM' : 'WET' });
   }
@@ -111,7 +111,18 @@ function run(input, now = Date.now() / 1000) {
   result.state = 'no_window';
   result.headline = 'No dry window found';
   result.window = 'Today / Tomorrow';
-  result.detail = `No ${minimum}-hour ${daylightOnly ? 'daylight ' : ''}window meets your limits.${rows.some(r => !r.known || (daylightOnly && !r.daylightKnown)) ? ' Some data is missing.' : ''}`;
+  const relevant = daylightOnly ? rows.filter(r => r.inDaylight) : rows;
+  const blockers = [
+    { count: relevant.filter(r => !r.known).length, text: 'Required forecast data is missing.' },
+    { count: relevant.filter(r => r.storm).length, text: 'Thunderstorms interrupt the available periods.' },
+    { count: relevant.filter(r => r.known && r.mm > 0.1).length, text: 'Precipitation amount exceeds the dry limit.' },
+    { count: relevant.filter(r => r.known && r.p > threshold).length, text: `Rain probability exceeds ${threshold}%.` }
+  ].sort((a, b) => b.count - a.count);
+  result.reason = !relevant.length ? 'No complete daylight intervals are available.'
+    : relevant.some(r => r.dry) ? `Dry periods are shorter than ${minimum} hour${minimum === 1 ? '' : 's'}.`
+    : blockers[0].count ? blockers[0].text
+    : `No ${minimum}-hour window meets your limits.`;
+  result.detail = result.reason;
   result.ribbon = weatherRibbon(rows, daylight, null, now, fmt, relativeDay, temp);
   if (!chosen) {
     const available = rows[rows.length - 1].end - Math.max(now, rows[0].start);
@@ -119,7 +130,8 @@ function run(input, now = Date.now() / 1000) {
       result.state = 'insufficient';
       result.headline = 'Not enough forecast data';
       result.window = 'Waiting for more hours';
-      result.detail = `Less than ${minimum} hour${minimum === 1 ? '' : 's'} of usable forecast remain.`;
+      result.reason = `Less than ${minimum} hour${minimum === 1 ? '' : 's'} of usable forecast remain.`;
+      result.detail = result.reason;
     }
     return result;
   }
@@ -138,10 +150,17 @@ function run(input, now = Date.now() / 1000) {
   result.date = `${relativeDay(start)}${dateKey(start) !== dateKey(end) ? `–${relativeDay(end)}` : ''} · ${result.duration}`;
   result.temperature = temperatures.length ? `${temp(Math.min(...temperatures))}–${temp(Math.max(...temperatures))}` : 'Temperature unavailable';
   result.wind = winds.length ? `Wind up to ${wind(Math.max(...winds))}` : 'Wind unavailable';
-  result.risk = `Rain risk ≤${Math.max(...chosen.map(r => r.p))}%`;
-  result.detail = last === rows[rows.length - 1]
-    ? 'Dry through shown forecast · May continue beyond it'
-    : daylightOnly ? 'Daylight hours · Hourly estimate' : 'Hourly estimate · Conditions may change';
+  const maxRisk = Math.max(...chosen.map(r => r.p));
+  result.risk = `Rain risk ≤${maxRisk}%`;
+  const firstIndex = rows.indexOf(first), previous = firstIndex > 0 ? rows[firstIndex - 1] : null;
+  result.reason = start === now
+    ? (maxRisk === 0 ? 'No rain expected during this window.' : `Rain risk stays at or below ${maxRisk}%.`)
+    : daylightOnly && previous && !previous.inDaylight ? 'Starts with the next daylight interval.'
+    : previous && !previous.known ? 'Starts after uncertain forecast data.'
+    : previous && previous.storm ? 'Starts after thunderstorms pass.'
+    : previous && (previous.p > threshold || previous.mm > 0.1) ? 'Starts after rain conditions improve.'
+    : 'Earliest window meeting your limits.';
+  result.detail = result.reason + (last === rows[rows.length - 1] ? ' May continue beyond the shown forecast.' : '');
   return result;
 }
 if (typeof module !== 'undefined') module.exports = { run };

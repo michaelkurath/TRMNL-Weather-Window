@@ -52,7 +52,9 @@ jobs:
             settings = YAML.load_file("src/settings.yml")
             base = (Time.now.to_i / 86400) * 86400
             times = (0..72).map { |i| base + i * 3600 }
-            data = {"timezone"=>"UTC", "daily"=>{"sunrise"=>(0..2).map{|i| base+i*86400+6*3600}, "sunset"=>(0..2).map{|i| base+i*86400+18*3600}}, "hourly"=>{"time"=>times, "temperature_2m"=>times.map{20}, "precipitation_probability"=>times.map{0}, "precipitation"=>times.map{0}, "wind_speed_10m"=>times.map{6}, "weather_code"=>times.map{0}}}
+            hours = times.map { |t| Time.at(t).utc.hour }
+            wet = hours.map { |hour| (9..11).include?(hour) }
+            data = {"timezone"=>"UTC", "daily"=>{"sunrise"=>(0..2).map{|i| base+i*86400+6*3600}, "sunset"=>(0..2).map{|i| base+i*86400+18*3600}}, "hourly"=>{"time"=>times, "temperature_2m"=>hours.map{|hour| 18-((hour-14).abs/2.0)}, "precipitation_probability"=>wet.map{|value| value ? 70 : 10}, "precipitation"=>wet.map{|value| value ? 1.2 : 0}, "wind_speed_10m"=>hours.map{|hour| 5+(hour%5)}, "weather_code"=>wet.map{|value| value ? 61 : 1}}}
             settings["strategy"] = "static"
             settings["static_data"] = JSON.generate(data)
             File.write("src/settings.yml", YAML.dump(settings))

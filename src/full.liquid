@@ -1,10 +1,64 @@
-<div class="layout layout--col layout--top gap--small lg:gap--medium">
-{% render 'hero', headline: headline, window: window, found: found, date: date, risk: risk, temperature: temperature, wind: wind, detail: detail, size: 'value--large lg:value--xlarge', expanded: true %}
-{% if ribbon %}
-{% render 'weather_ribbon', ribbon: ribbon %}
-{% endif %}
-<div class="w--full">
-  <span class="label label--small 1bit:text--black">{{ updated | escape }} · {{ zone | escape }} · Open-Meteo (CC BY 4.0)</span>
-</div>
+<div class="layout ww-full">
+  <div class="ww-heading">
+    <div class="ww-decision">
+      <div class="ww-eyebrow">{{ headline | escape }}</div>
+      <div class="ww-time{% unless found %} ww-time--message{% endunless %}">{{ window | escape }}</div>
+      {% if found %}<div class="ww-date">{{ date | escape }}</div>{% endif %}
+    </div>
+    {% if found %}
+    <div class="ww-conditions">
+      <div class="ww-condition-main">{{ temperature | escape }}</div>
+      <div>{{ wind | escape }}</div>
+      <div>{{ risk | escape }}</div>
+    </div>
+    {% endif %}
+  </div>
+  <div class="ww-reason">{{ detail | escape }}</div>
+  {% if ribbon %}
+  <svg class="ww-outlook" viewBox="0 0 960 360" role="img" aria-label="Hourly temperature and rain probability. Black top bar marks the recommended dry window. Bottom patterned strip marks night. Triangle marks now.">
+    <defs><pattern id="ww-full-night" width="8" height="8" patternUnits="userSpaceOnUse"><path d="M0 8L8 0" stroke="black" stroke-width="1"/></pattern></defs>
+    <text x="40" y="22" font-size="20" font-weight="700">{% if found %}LIKELY DRY{% else %}HOURLY OUTLOOK{% endif %}</text>
+    <text x="920" y="22" text-anchor="end" font-size="18">{{ ribbon.period | escape }}</text>
+    <line x1="40" y1="42" x2="920" y2="42" stroke="black" stroke-width="1"/>
+    {% if ribbon.selection %}<rect x="{{ ribbon.selection.x }}" y="36" width="{{ ribbon.selection.width }}" height="12" rx="6" fill="black"/>{% endif %}
+    <text x="40" y="81" font-size="18" font-weight="700" letter-spacing="1">TEMPERATURE</text>
+    <path d="{{ ribbon.path }}" transform="translate(0,22)" fill="none" stroke="black" stroke-width="4" stroke-linejoin="round"/>
+    {% for tick in ribbon.labels %}
+      <text x="{{ tick.x }}" y="{{ tick.ty | plus: 18 }}" text-anchor="middle" font-size="23" font-weight="600">{{ tick.temperature | escape }}</text>
+    {% endfor %}
+    <text x="40" y="209" font-size="18" font-weight="700" letter-spacing="1">RAIN CHANCE</text>
+    <text x="920" y="209" text-anchor="end" font-size="18">0–100%</text>
+    <g transform="translate(0,40)">
+    {% for bar in ribbon.bars %}
+      {% if bar.unknown %}<text x="{{ bar.x }}" y="258" font-size="20">?</text>
+      {% else %}<rect x="{{ bar.x }}" y="{{ bar.y }}" width="{{ bar.width }}" height="{{ bar.height }}" fill="black"/>{% endif %}
+    {% endfor %}
+    </g>
+    <line x1="40" y1="300" x2="920" y2="300" stroke="black" stroke-width="1"/>
+    {% for tick in ribbon.labels %}
+      {% unless tick.probability == '?' %}<text x="{{ tick.x }}" y="{{ tick.rainLabelY }}" text-anchor="middle" font-size="19" font-weight="600">{{ tick.probability }}</text>{% endunless %}
+      <text x="{{ tick.x }}" y="326" text-anchor="middle" font-size="21">{{ tick.time }}</text>
+    {% endfor %}
+    {% if ribbon.nowX %}<path d="M-6 0L6 0L0 8Z" transform="translate({{ ribbon.nowX }},50)" fill="black"/>{% endif %}
+    {% for band in ribbon.nights %}<rect x="{{ band.x }}" y="338" width="{{ band.width }}" height="7" fill="url(#ww-full-night)"/>{% endfor %}
+    <text x="40" y="360" font-size="14">▼ Now · Bottom strip: night</text>
+  </svg>
+  {% endif %}
+  <div class="ww-source">{{ updated | escape }} · {{ zone | escape }} · Open-Meteo (CC BY 4.0)</div>
 </div>
 {% render 'title_bar', location: location %}
+<style>
+  .ww-full { display:flex; flex-direction:column; align-items:stretch; justify-content:flex-start; gap:10px; padding:20px 24px 12px; font-family:Arial,Helvetica,sans-serif; color:#000; }
+  .ww-heading { display:flex; justify-content:space-between; align-items:center; gap:24px; }
+  .ww-decision { min-width:0; }
+  .ww-eyebrow { font-size:15px; font-weight:700; }
+  .ww-time { font-size:58px; line-height:1.08; font-weight:700; letter-spacing:-2px; white-space:nowrap; margin:4px 0; }
+  .ww-time--message { font-size:34px; white-space:normal; letter-spacing:-1px; }
+  .ww-date { font-size:16px; }
+  .ww-conditions { border-left:2px solid #000; padding-left:20px; font-size:16px; line-height:1.6; flex-shrink:0; max-width:43%; }
+  .ww-condition-main { font-size:24px; font-weight:700; }
+  .ww-reason { font-size:15px; padding-bottom:10px; border-bottom:2px solid #000; }
+  .ww-outlook { display:block; width:100%; min-height:0; flex:1 1 auto; font-family:Arial,Helvetica,sans-serif; overflow:visible; }
+  .ww-source { margin-top:auto; font-size:11px; }
+  @media(min-width:1000px) { .ww-full { gap:18px; padding:28px 32px 18px; } .ww-time { font-size:80px; } .ww-time--message { font-size:44px; } .ww-eyebrow,.ww-date,.ww-reason,.ww-conditions { font-size:20px; } .ww-condition-main { font-size:30px; } .ww-source { font-size:14px; } }
+</style>

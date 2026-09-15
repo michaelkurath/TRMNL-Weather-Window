@@ -80,6 +80,16 @@ function checkWeather(run) {
  test('negative imperial temperature converts correctly',()=>run(data,stamp('2026-09-14T14:08:00Z')).temperature.includes('-4°F'));
  data=fixture();data.trmnl={plugin_settings:{custom_fields_values:{daylight_mode:'any'}}};data.hourly.temperature_2m.fill(null);data.hourly.wind_speed_10m.fill(null);r=run(data,stamp('2026-09-14T14:08:00Z'));
  test('missing supporting values stay explicit',()=>r.found&&r.temperature==='Temperature unavailable'&&r.wind==='Wind unavailable');
+ data=fixture();now=stamp('2026-09-14T14:08:00Z');r=run(data,now);
+ test('successful refresh has explicit state',()=>r.state==='ok'&&r.checkedAt===now);
+ test('model issue time is not invented',()=>r.modelIssuedAt===null&&r.updated.startsWith('Checked '));
+ r=run({error:'upstream timeout'},now);
+ test('polling error is explicit and rejects cached implication',()=>r.state==='service_error'&&r.headline==='Weather service unavailable'&&r.detail.includes('no cached forecast'));
+ r=run(fixture(),now);
+ test('valid data recovers after an error',()=>r.state==='ok'&&r.found);
+ data=fixture();r=run(data,stamp('2026-09-18T00:00:00Z'));
+ test('outdated state does not claim current data',()=>r.state==='outdated'&&r.detail.includes('not shown as current'));
+ test('empty input has unavailable state',()=>run({},now).state==='unavailable');
  return passed;
 }
 if(typeof module!=='undefined')module.exports={checkWeather};

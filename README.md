@@ -52,3 +52,9 @@ Live form/polling checks remain pending: select Russikon, try a postcode, choose
 between ambiguous town names, verify the selected coordinates reach Open-Meteo,
 and confirm the optional display name does not change the forecast location.
 Existing instances require the one-time location selection described above.
+
+### Freshness and failures
+
+The footer says **Checked**, which is the time this plugin evaluated the response. Open-Meteo's standard forecast response does not provide one authoritative model-issue timestamp, so the plugin does not invent or display one.
+
+Forecast coverage that has already ended is labelled **Forecast outdated** and is not presented as current. Missing intervals or required weather values are labelled **Forecast incomplete**. An error payload is labelled **Weather service unavailable**. The transform does not retain a previous response; HTTP polling failures that happen before the transform runs are displayed and retried by TRMNL itself.

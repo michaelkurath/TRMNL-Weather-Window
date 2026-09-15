@@ -3,15 +3,23 @@ function run(input, now = Date.now() / 1000) {
   input = input || {};
   const fields = input.trmnl?.plugin_settings?.custom_fields_values || {};
   const number = (v) => typeof v === 'number' && Number.isFinite(v) ? v : null;
-  const threshold = Math.min(100, Math.max(0, Number(fields.rain_limit ?? 20) || 0));
-  const minimum = Math.min(4, Math.max(1, Number(fields.minimum_hours) || 1));
+  const bounded = (value, fallback, min, max) => {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? Math.min(max, Math.max(min, parsed)) : fallback;
+  };
+  const threshold = bounded(fields.rain_limit, 20, 0, 100);
+  const minimum = Math.round(bounded(fields.minimum_hours, 1, 1, 4));
   const imperial = fields.units === 'imperial';
   const daylightOnly = String(fields.daylight_mode || 'daylight').trim().toLowerCase() !== 'any';
   let zone = input.timezone || 'UTC';
   try { new Intl.DateTimeFormat('en-GB', { timeZone: zone }); } catch { zone = 'UTC'; }
   const fmt = (t) => new Intl.DateTimeFormat('en-GB', { timeZone: zone, hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(new Date(t * 1000));
   const day = (t) => new Intl.DateTimeFormat('en-GB', { timeZone: zone, day: '2-digit', month: 'short' }).format(new Date(t * 1000));
-  const dateKey = (t) => new Intl.DateTimeFormat('en-CA', { timeZone: zone, year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(t * 1000));
+  const dateFormatter = new Intl.DateTimeFormat('en', { timeZone: zone, year: 'numeric', month: '2-digit', day: '2-digit' });
+  const dateKey = (t) => {
+    const parts = Object.fromEntries(dateFormatter.formatToParts(new Date(t * 1000)).map(part => [part.type, part.value]));
+    return `${parts.year}-${parts.month}-${parts.day}`;
+  };
   now = number(now) ?? Date.now() / 1000;
   const today = dateKey(now);
   // Never parse Intl-formatted dates: serverless runtimes may emit 15/09/2026
@@ -25,7 +33,20 @@ function run(input, now = Date.now() / 1000) {
     headline: 'Forecast unavailable', window: 'Try again later', detail: 'No usable hourly forecast.',
     hours: [], found: false, updated: `Checked ${day(now)} ${fmt(now)}`, threshold, minimum };
   const h = input.hourly;
-  if (!h || !Array.isArray(h.time) || input.error) return result;
+  if (input.error) {
+    result.detail = 'Weather service returned an error.';
+    return result;
+  }
+  if (!h || !Array.isArray(h.time)) return result;
+  const timestamps = h.time.map(number).filter(t => t !== null);
+  if (!timestamps.length) return result;
+  const latest = Math.max(...timestamps);
+  if (latest <= now) {
+    result.headline = 'Forecast outdated';
+    result.window = 'Waiting for update';
+    result.detail = `Latest forecast ended ${relativeDay(latest)} ${fmt(latest)}.`;
+    return result;
+  }
   const daylight = (input.daily?.sunrise || []).map((rise, i) => ({ rise: number(rise), set: number(input.daily?.sunset?.[i]) }))
     .filter(d => d.rise !== null && d.set !== null && d.rise > 0 && d.set > d.rise);
   if (daylightOnly && !daylight.length) {
@@ -51,7 +72,20 @@ function run(input, now = Date.now() / 1000) {
       label: !known ? '?' : dry ? 'DRY' : storm ? 'STORM' : 'WET' });
   }
   result.hours = rows.slice(0, 12);
-  if (!rows.length || rows[0].start > now || !rows.some(r => r.known)) return result;
+  if (!rows.length) return result;
+  result.ribbon = weatherRibbon(rows, daylight, null, now, fmt, relativeDay, temp);
+  if (rows[0].start > now) {
+    result.headline = 'Forecast incomplete';
+    result.window = 'Waiting for complete data';
+    result.detail = 'The current forecast interval is missing.';
+    return result;
+  }
+  if (!rows.some(r => r.known)) {
+    result.headline = 'Forecast incomplete';
+    result.window = 'Weather data missing';
+    result.detail = 'Rain or weather-code data is unavailable.';
+    return result;
+  }
   let chosen = null, group = [];
   const consider = () => {
     if (!chosen && group.length && group[group.length - 1].end - Math.max(now, group[0].start) >= minimum * 3600) chosen = group.slice();
@@ -65,7 +99,15 @@ function run(input, now = Date.now() / 1000) {
   result.window = 'Today / Tomorrow';
   result.detail = `No ${minimum}-hour ${daylightOnly ? 'daylight ' : ''}window meets your limits.${rows.some(r => !r.known || (daylightOnly && !r.daylightKnown)) ? ' Some data is missing.' : ''}`;
   result.ribbon = weatherRibbon(rows, daylight, null, now, fmt, relativeDay, temp);
-  if (!chosen) return result;
+  if (!chosen) {
+    const available = rows[rows.length - 1].end - Math.max(now, rows[0].start);
+    if (available < minimum * 3600) {
+      result.headline = 'Not enough forecast data';
+      result.window = 'Waiting for more hours';
+      result.detail = `Less than ${minimum} hour${minimum === 1 ? '' : 's'} of usable forecast remain.`;
+    }
+    return result;
+  }
   const first = chosen[0], last = chosen[chosen.length - 1];
   const start = Math.max(now, first.start), end = last.end;
   const temperatures = chosen.map(r => r.t).filter(t => t !== null);

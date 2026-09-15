@@ -131,27 +131,29 @@
 {% endtemplate %}
 
 {% template editorial_strip %}
-<svg class="ww-editorial-strip" viewBox="0 0 960 {% if minimal %}220{% else %}285{% endif %}" preserveAspectRatio="none" role="img" aria-label="{% if minimal %}Hourly rain probability{% else %}Hourly temperature and rain probability{% endif %}. Top black rail marks the likely dry window.">
-  <text x="40" y="28" font-size="30" font-weight="700">{% if found %}LIKELY DRY{% else %}OUTLOOK{% endif %}</text>
-  <line x1="40" y1="46" x2="920" y2="46" stroke="black" stroke-width="2"/>
-  {% if ribbon.selection %}<rect x="{{ ribbon.selection.x }}" y="40" width="{{ ribbon.selection.width }}" height="12" rx="6" fill="black"/>{% endif %}
+<svg class="ww-editorial-strip" viewBox="0 0 400 {% if minimal %}94{% else %}142{% endif %}" role="img" aria-label="{% if minimal %}Hourly rain probability{% else %}Hourly temperature and rain probability{% endif %}. Top black rail marks the likely dry window.">
+  <text x="16" y="12" font-size="12" font-weight="700">{% if found %}LIKELY DRY{% else %}OUTLOOK{% endif %}</text>
+  <line x1="16" y1="21" x2="368" y2="21" stroke="black" stroke-width="0.8"/>
+  {% if ribbon.selection %}<rect x="{{ ribbon.selection.x | times: 0.4 }}" y="18" width="{{ ribbon.selection.width | times: 0.4 }}" height="6" rx="3" fill="black"/>{% endif %}
   {% unless minimal %}
-  <text x="40" y="83" font-size="28" font-weight="700">TEMP</text>
-  <path d="{{ ribbon.path }}" transform="translate(0,-15)" fill="none" stroke="black" stroke-width="5"/>
+  <text x="16" y="36" font-size="11" font-weight="700">TEMP</text>
+  <path d="{{ ribbon.path }}" transform="translate(0,10) scale(0.4,0.32)" fill="none" stroke="black" stroke-width="4"/>
   {% endunless %}
-  <text x="40" y="{% if minimal %}90{% else %}158{% endif %}" font-size="28" font-weight="700">RAIN %</text>
-  <g transform="translate(0,{% if minimal %}-90{% else %}-35{% endif %})">
+  <text x="16" y="{% if minimal %}38{% else %}77{% endif %}" font-size="11" font-weight="700">RAIN %</text>
+  <g transform="{% if minimal %}translate(0,-13) scale(0.4,0.3){% else %}translate(0,-18) scale(0.4,0.5){% endif %}">
   {% for bar in ribbon.bars %}
-    {% if bar.unknown %}<text x="{{ bar.x }}" y="254" font-size="32">?</text>
-    {% else %}<rect x="{{ bar.x }}" y="{{ bar.y }}" width="{{ bar.width }}" height="{{ bar.height }}" fill="black"/>{% endif %}
+    {% unless bar.unknown %}<rect x="{{ bar.x }}" y="{{ bar.y }}" width="{{ bar.width }}" height="{{ bar.height }}" fill="black"/>{% endunless %}
   {% endfor %}
   </g>
-  <line x1="40" y1="{% if minimal %}170{% else %}225{% endif %}" x2="920" y2="{% if minimal %}170{% else %}225{% endif %}" stroke="black" stroke-width="2"/>
+  {% for bar in ribbon.bars %}
+    {% if bar.unknown %}<text x="{{ bar.x | times: 0.4 }}" y="{% if minimal %}62{% else %}109{% endif %}" font-size="11">?</text>{% endif %}
+  {% endfor %}
+  <line x1="16" y1="{% if minimal %}65{% else %}112{% endif %}" x2="368" y2="{% if minimal %}65{% else %}112{% endif %}" stroke="black" stroke-width="0.8"/>
   {% for tick in ribbon.labels %}
     {% assign alternate = forloop.index0 | modulo: 2 %}
     {% if alternate == 0 %}
-      <text x="{{ tick.x }}" y="{% if minimal %}199{% else %}254{% endif %}" text-anchor="middle" font-size="32">{{ tick.time }}</text>
-      <text x="{{ tick.x }}" y="{% if minimal %}220{% else %}279{% endif %}" text-anchor="middle" font-size="25">{{ tick.day }}</text>
+      <text x="{{ tick.x | times: 0.4 }}" y="{% if minimal %}79{% else %}126{% endif %}" text-anchor="middle" font-size="13">{{ tick.time }}</text>
+      <text x="{{ tick.x | times: 0.4 }}" y="{% if minimal %}92{% else %}139{% endif %}" text-anchor="middle" font-size="11">{{ tick.day }}</text>
     {% endif %}
   {% endfor %}
 </svg>
@@ -167,24 +169,24 @@
 .ww-small-source { margin-top:auto; font-size:10px; line-height:1.2; }
 .ww-small-body { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:24px; align-items:start; }
 .ww-small-chart { min-width:0; width:100%; border-top:1px solid #000; padding-top:6px; }
-.ww-editorial-strip { display:block; width:100%; height:128px; font-family:Arial,Helvetica,sans-serif; overflow:visible; }
+.ww-editorial-strip { display:block; width:100%; height:auto; font-family:Arial,Helvetica,sans-serif; overflow:visible; }
 .ww-small--horizontal .ww-small-weather { font-size:13px; margin-top:4px; }
 .ww-small--vertical .ww-small-time { font-size:44px; }
 .ww-small--vertical .ww-small-time--message { font-size:29px; }
 .ww-small--vertical .ww-small-chart { margin-top:8px; }
-.ww-small--vertical .ww-editorial-strip { height:165px; }
+.ww-small--vertical .ww-editorial-strip { height:auto; }
 .ww-small--quadrant { gap:5px; padding:8px 12px 6px; }
 .ww-small--quadrant .ww-small-time { font-size:32px; margin:2px 0 4px; }
 .ww-small--quadrant .ww-small-time--message { font-size:23px; }
 .ww-small--quadrant .ww-small-date { font-size:12px; }
 .ww-small--quadrant .ww-small-reason { font-size:12px; margin-top:4px; }
-.ww-small--quadrant .ww-editorial-strip { height:60px; }
+.ww-small--quadrant .ww-editorial-strip { height:auto; }
 @container(min-width:450px) {
   .ww-small--vertical .ww-small-time { font-size:56px; }
   .ww-small--vertical .ww-small-time--message { font-size:36px; }
-  .ww-small--vertical .ww-editorial-strip { height:220px; }
+  .ww-small--vertical .ww-editorial-strip { height:auto; }
   .ww-small--quadrant .ww-small-time { font-size:40px; }
   .ww-small--quadrant .ww-small-time--message { font-size:27px; }
-  .ww-small--quadrant .ww-editorial-strip { height:100px; }
+  .ww-small--quadrant .ww-editorial-strip { height:auto; }
 }
 </style>

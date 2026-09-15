@@ -194,7 +194,7 @@ function weatherRibbon(rows, solar, selected, now, fmt, relativeDay, temp) {
   previous=r.t===null?null:r.end;
   const p=r.p!==null&&r.p>=0&&r.p<=100?r.p:null;
   bars.push({x:x(r.start)+1,width:Math.max(1,x(r.end)-x(r.start)-2),y:p===null?260:260-p*.6,height:p===null?0:p*.6,unknown:p===null});
-  if(i%step===0) labels.push({x:x(r.start),time:fmt(r.start),day:relativeDay(r.start),temperature:temp(r.t),ty:r.t===null?135:y(r.t)-10,probability:p===null?'?':Math.round(p)+'%',icon:r.code===null?'unknown':r.code>=95?'storm':r.code>=71&&r.code<=77?'snow':r.code>=51?'rain':r.code===0?'sun':'cloud'});
+  if(i%step===0) labels.push({x:x(r.start),time:fmt(r.start),day:relativeDay(r.start),temperature:temp(r.t),ty:r.t===null?135:y(r.t)-10,probability:p===null?'?':Math.round(p)+'%',icon:Math.abs(x(r.start)-x(now))<35?'none':r.code===null?'unknown':r.code>=95?'storm':r.code>=71&&r.code<=77?'snow':r.code>=51?'rain':r.code===0?'sun':'cloud'});
   if(i===0||relativeDay(r.start)!==relativeDay(rows[i-1].start))dayMarkers.push({x:x(r.start),label:relativeDay(r.start)});
  }
  // Only shade intervals on days with known sunrise and sunset.

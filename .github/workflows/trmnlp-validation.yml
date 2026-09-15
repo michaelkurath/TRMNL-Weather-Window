@@ -65,12 +65,17 @@ jobs:
         run: |
           trmnlp build --png --width 1040 --height 780 --color-depth 4
           mv _build preview-x
+      - name: Render error-state sample
+        run: |
+          ruby -ryaml -rjson -e 'settings = YAML.load_file("src/settings.yml"); settings["static_data"] = JSON.generate({"error"=>"sample upstream failure"}); File.write("src/settings.yml", YAML.dump(settings))'
+          trmnlp build --png --width 800 --height 480 --color-depth 1
+          mv _build preview-error
       - name: Expose Full previews for visual review
         run: |
           python3 - <<'PY'
           import base64
           from pathlib import Path
-          for device in ['og', 'x']:
+          for device in ['og', 'x', 'error']:
               path = Path('preview-' + device) / 'full.png'
               print('PREVIEW_' + device.upper() + '=' + base64.b64encode(path.read_bytes()).decode())
           PY
@@ -82,6 +87,7 @@ jobs:
           path: |
             preview-og/
             preview-x/
+            preview-error/
             _build/
             diagnostics/
           if-no-files-found: warn

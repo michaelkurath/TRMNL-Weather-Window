@@ -23,7 +23,7 @@ Native location entry, daylight-aware selection and the graphical Full weather r
 - [x] Overnight wording and a non-duplicating location fallback.
 - [x] Full: two rows of six hours, larger X typography and less repetitive dry labels.
 - [x] Full: attribution in normal layout flow.
-- [x] Thirty-five regression checks and [layout review matrix](docs/layout-review.md).
+- [x] Forty-one regression checks and [layout review matrix](docs/layout-review.md).
 - [x] Graphical Full weather ribbon with temperature, rain, daylight and exact window alignment.
 - [x] Locale-independent serverless date handling and automatic PR validation.
 
@@ -60,10 +60,10 @@ Acceptance: no unexplained blank screen, clipped content or ambiguous endpoint i
 Acceptance: deterministic fixtures cover each case; the interval shown and its supporting values describe the same period.
 
 ### WW-03: Freshness and graceful failure
-- [ ] Distinguish “checked at” from forecast/model issue time; never invent unavailable timestamps.
+- [x] Distinguish “checked at” from forecast/model issue time; never invent unavailable timestamps.
 - [x] Define and document stale-data behavior and a visible stale/unavailable state.
-- [ ] Verify polling failures and recovery without adding a backend by default.
-- [ ] If retaining previous data is supported, label its age; otherwise show unavailable.
+- [x] Verify polling failures and recovery without adding a backend by default.
+- [x] If retaining previous data is supported, label its age; otherwise show unavailable.
 Acceptance: a failed update cannot make old or absent data appear current.
 
 ## M2 — Useful outdoor windows
@@ -178,6 +178,9 @@ node -e "console.log(require('./test/weather.js').checkWeather(require('./src/tr
 
 ## WW-02 implementation update
 Open-Meteo documents hourly precipitation as a preceding-hour sum/average while temperature and wind speed are instantaneous values. The transform therefore evaluates rain at an interval’s end timestamp and supporting temperature/wind at its start. Settings use documented defaults when invalid. Locale-independent date keys, stale/truncated/incomplete states, and deterministic timezone/data-gap fixtures cover the remaining WW-02 acceptance cases.
+
+## WW-03 implementation update
+Every transform result now carries a machine-readable state: `ok`, `no_window`, `insufficient`, `incomplete`, `outdated`, `daylight_unavailable`, `service_error` or `unavailable`. The visible footer reports evaluation time as “Checked”; no model-issue timestamp is invented. The transform retains no prior response. HTTP failures before transform execution remain TRMNL-managed and are documented as a platform boundary.
 
 ## WW-06 implementation update
 Full now uses a timestamp-aligned SVG weather ribbon: weather-code icons, temperature line with missing-value gaps, 0–100% rain bars, known night shading and an exact next-window outline. Smaller views retain compact timelines. Chart geometry is computed in the transform. Tests cover time alignment and missing data; OG/X rendering and visual review use the CI workflow.

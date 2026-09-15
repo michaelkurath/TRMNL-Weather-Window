@@ -31,10 +31,13 @@ function run(input, now = Date.now() / 1000) {
   const wind = (n) => n === null ? '—' : `${Math.round(imperial ? n / 1.609344 : n)} ${imperial ? 'mph' : 'km/h'}`;
   const result = { location: String(fields.location_name || 'My location').slice(0, 35), zone,
     headline: 'Forecast unavailable', window: 'Try again later', detail: 'No usable hourly forecast.',
-    hours: [], found: false, updated: `Checked ${day(now)} ${fmt(now)}`, threshold, minimum };
+    hours: [], found: false, state: 'unavailable', checkedAt: now, modelIssuedAt: null,
+    updated: `Checked ${day(now)} ${fmt(now)}`, threshold, minimum };
   const h = input.hourly;
   if (input.error) {
-    result.detail = 'Weather service returned an error.';
+    result.state = 'service_error';
+    result.headline = 'Weather service unavailable';
+    result.detail = 'Update failed; no cached forecast is shown.';
     return result;
   }
   if (!h || !Array.isArray(h.time)) return result;
@@ -42,14 +45,16 @@ function run(input, now = Date.now() / 1000) {
   if (!timestamps.length) return result;
   const latest = Math.max(...timestamps);
   if (latest <= now) {
+    result.state = 'outdated';
     result.headline = 'Forecast outdated';
     result.window = 'Waiting for update';
-    result.detail = `Latest forecast ended ${relativeDay(latest)} ${fmt(latest)}.`;
+    result.detail = `Forecast coverage ended ${relativeDay(latest)} ${fmt(latest)}; it is not shown as current.`;
     return result;
   }
   const daylight = (input.daily?.sunrise || []).map((rise, i) => ({ rise: number(rise), set: number(input.daily?.sunset?.[i]) }))
     .filter(d => d.rise !== null && d.set !== null && d.rise > 0 && d.set > d.rise);
   if (daylightOnly && !daylight.length) {
+    result.state = 'daylight_unavailable';
     result.headline = 'Daylight unavailable';
     result.window = 'Check settings';
     result.detail = 'No usable sunrise/sunset. Try Any time.';
@@ -72,15 +77,23 @@ function run(input, now = Date.now() / 1000) {
       label: !known ? '?' : dry ? 'DRY' : storm ? 'STORM' : 'WET' });
   }
   result.hours = rows.slice(0, 12);
-  if (!rows.length) return result;
+  if (!rows.length) {
+    result.state = 'incomplete';
+    result.headline = 'Forecast incomplete';
+    result.window = 'Waiting for complete data';
+    result.detail = 'No continuous future hourly intervals are available.';
+    return result;
+  }
   result.ribbon = weatherRibbon(rows, daylight, null, now, fmt, relativeDay, temp);
   if (rows[0].start > now) {
+    result.state = 'incomplete';
     result.headline = 'Forecast incomplete';
     result.window = 'Waiting for complete data';
     result.detail = 'The current forecast interval is missing.';
     return result;
   }
   if (!rows.some(r => r.known)) {
+    result.state = 'incomplete';
     result.headline = 'Forecast incomplete';
     result.window = 'Weather data missing';
     result.detail = 'Rain or weather-code data is unavailable.';
@@ -95,6 +108,7 @@ function run(input, now = Date.now() / 1000) {
     if (row.eligible) group.push(row);
   }
   consider();
+  result.state = 'no_window';
   result.headline = 'No dry window found';
   result.window = 'Today / Tomorrow';
   result.detail = `No ${minimum}-hour ${daylightOnly ? 'daylight ' : ''}window meets your limits.${rows.some(r => !r.known || (daylightOnly && !r.daylightKnown)) ? ' Some data is missing.' : ''}`;
@@ -102,6 +116,7 @@ function run(input, now = Date.now() / 1000) {
   if (!chosen) {
     const available = rows[rows.length - 1].end - Math.max(now, rows[0].start);
     if (available < minimum * 3600) {
+      result.state = 'insufficient';
       result.headline = 'Not enough forecast data';
       result.window = 'Waiting for more hours';
       result.detail = `Less than ${minimum} hour${minimum === 1 ? '' : 's'} of usable forecast remain.`;
@@ -115,6 +130,7 @@ function run(input, now = Date.now() / 1000) {
   result.hours = rows.filter(r => r.start >= first.start).slice(0, 12);
   result.ribbon = weatherRibbon(rows, daylight, {start,end}, now, fmt, relativeDay, temp);
   result.found = true;
+  result.state = 'ok';
   result.headline = 'Next likely dry window';
   result.window = `${start === now ? 'Now' : fmt(start)}–${fmt(end)}`;
   const minutes = Math.floor((end - start) / 60);

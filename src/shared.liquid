@@ -39,20 +39,21 @@
 {% endtemplate %}
 
 {% template weather_ribbon %}
-<svg class="ww-ribbon" viewBox="0 0 960 330" role="img" aria-label="Hourly temperature and rain probability. Outlined region is the next window; hatched regions are night.">
+<svg class="ww-ribbon" viewBox="0 0 960 300" role="img" aria-label="Hourly temperature and rain probability. The highlighted region is the next likely dry window; dotted regions are night.">
   <defs>
-    <pattern id="ww-night" width="8" height="8" patternUnits="userSpaceOnUse"><path d="M0 8L8 0" stroke="#999" stroke-width="1"/></pattern>
+    <pattern id="ww-night" width="12" height="12" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1.15" fill="#777"/></pattern>
   </defs>
-  <text x="40" y="20" font-size="17">{{ ribbon.range | escape }}</text>
-  {% for band in ribbon.nights %}<rect x="{{ band.x }}" y="32" width="{{ band.width }}" height="238" fill="url(#ww-night)"/>{% endfor %}
-  <text x="40" y="92" font-size="16">TEMPERATURE</text>
-  <text x="40" y="188" font-size="16">RAIN CHANCE · 0–100%</text>
+  <text x="40" y="18" font-size="15" font-weight="600" letter-spacing="1">{{ ribbon.range | escape }}</text>
+  {% for band in ribbon.nights %}<rect x="{{ band.x }}" y="31" width="{{ band.width }}" height="229" fill="url(#ww-night)"/>{% endfor %}
+  <line x1="40" y1="171" x2="920" y2="171" stroke="#999" stroke-width="1"/>
+  <text x="40" y="88" font-size="14" font-weight="600" letter-spacing="1">TEMP</text>
+  <text x="40" y="190" font-size="14" font-weight="600" letter-spacing="1">RAIN</text>
   <line x1="40" y1="260" x2="920" y2="260" stroke="black" stroke-width="1"/>
   {% for bar in ribbon.bars %}
     {% if bar.unknown %}<text x="{{ bar.x }}" y="250" font-size="16">?</text>
     {% else %}<rect x="{{ bar.x }}" y="{{ bar.y }}" width="{{ bar.width }}" height="{{ bar.height }}" fill="black"/>{% endif %}
   {% endfor %}
-  <path d="{{ ribbon.path }}" fill="none" stroke="black" stroke-width="3"/>
+  <path d="{{ ribbon.path }}" fill="none" stroke="black" stroke-width="3.5" stroke-linejoin="round"/>
   {% for tick in ribbon.labels %}
     <g transform="translate({{ tick.x }}, 51)" fill="white" stroke="black" stroke-width="2">
     {% if tick.icon == 'sun' %}
@@ -66,16 +67,23 @@
     {% if tick.icon == 'snow' %}<path d="M0 10v14M-6 13l12 8M6 13l-12 8"/>{% endif %}
     {% endif %}
     </g>
-    <text x="{{ tick.x }}" y="{{ tick.ty }}" text-anchor="middle" font-size="18">{{ tick.temperature | escape }}</text>
-    <text x="{{ tick.x }}" y="284" text-anchor="middle" font-size="18">{{ tick.time }}</text>
-    <text x="{{ tick.x }}" y="307" text-anchor="middle" font-size="16">{{ tick.day }}</text>
+    <text x="{{ tick.x }}" y="{{ tick.ty }}" text-anchor="middle" font-size="17">{{ tick.temperature | escape }}</text>
+    <text x="{{ tick.x }}" y="285" text-anchor="middle" font-size="17">{{ tick.time }}</text>
   {% endfor %}
-  {% if ribbon.selection %}<rect x="{{ ribbon.selection.x }}" y="31" width="{{ ribbon.selection.width }}" height="237" rx="6" fill="none" stroke="black" stroke-width="4"/>{% endif %}
-  <text x="920" y="326" text-anchor="end" font-size="14">Outline: next window · Hatching: night</text>
+  {% for marker in ribbon.dayMarkers %}<text x="{{ marker.x }}" y="299" text-anchor="start" font-size="13" font-weight="600">{{ marker.label | upcase | escape }}</text>{% endfor %}
+  {% if ribbon.nowX %}
+    <line x1="{{ ribbon.nowX }}" y1="31" x2="{{ ribbon.nowX }}" y2="260" stroke="black" stroke-width="1.5" stroke-dasharray="5 5"/>
+    <rect x="{{ ribbon.nowX | minus: 22 }}" y="25" width="44" height="19" rx="3" fill="black"/>
+    <text x="{{ ribbon.nowX }}" y="39" text-anchor="middle" font-size="12" font-weight="700" fill="white">NOW</text>
+  {% endif %}
+  {% if ribbon.selection %}
+    <rect x="{{ ribbon.selection.x }}" y="31" width="{{ ribbon.selection.width }}" height="229" rx="5" fill="white" fill-opacity="0.18" stroke="black" stroke-width="2.5"/>
+    <rect x="{{ ribbon.selection.x }}" y="31" width="{{ ribbon.selection.width }}" height="9" rx="4" fill="black"/>
+  {% endif %}
 </svg>
 {% endtemplate %}
 <style>
-.ww-ribbon { display: block; width: 100%; height: auto; flex-shrink: 0; font-family: inherit; color: #000; }
+.ww-ribbon { display: block; width: 100%; height: auto; flex-shrink: 1; min-height: 0; font-family: inherit; color: #000; }
 </style>
 
 {% template weather_strip %}

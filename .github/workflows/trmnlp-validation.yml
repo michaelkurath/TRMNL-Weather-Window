@@ -46,6 +46,8 @@ jobs:
           set -o pipefail
           mkdir -p diagnostics
           trmnlp build 2>&1 | tee diagnostics/live-build.log
+      - name: Build and verify TRMNL import ZIP
+        run: bin/package.sh dist/weather-window.zip
       - name: Render OG/X stress matrix
         run: |
           mkdir -p matrix
@@ -81,6 +83,7 @@ jobs:
         with:
           name: weather-window-trmnlp
           path: |
+            dist/weather-window.zip
             matrix/
             matrix-sheets/
             _build/

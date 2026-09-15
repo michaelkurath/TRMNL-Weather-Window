@@ -28,6 +28,7 @@ function checkWeather(run) {
  data=fixture();data.hourly.weather_code.fill(95);
  test('storms cannot become outdoor windows',()=>!run(data,now).found);
  test('empty forecast is unavailable',()=>run({},now).headline==='Forecast unavailable');
+ test('invalid injected clock falls back without throwing',()=>run({},NaN).headline==='Forecast unavailable');
  data=fixture();data.daily.sunrise=[null,null];data.daily.sunset=[null,null];
  test('polar/missing solar times do not imply daylight',()=>run(data,now).headline==='Daylight unavailable');
  data=fixture();now=stamp('2026-09-14T16:30:00Z');

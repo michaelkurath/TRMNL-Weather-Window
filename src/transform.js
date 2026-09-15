@@ -12,10 +12,12 @@ function run(input, now = Date.now() / 1000) {
   const fmt = (t) => new Intl.DateTimeFormat('en-GB', { timeZone: zone, hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(new Date(t * 1000));
   const day = (t) => new Intl.DateTimeFormat('en-GB', { timeZone: zone, day: '2-digit', month: 'short' }).format(new Date(t * 1000));
   const dateKey = (t) => new Intl.DateTimeFormat('en-CA', { timeZone: zone, year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(t * 1000));
+  now = number(now) ?? Date.now() / 1000;
   const today = dateKey(now);
-  const tomorrowDate = new Date(today + 'T12:00:00Z');
-  tomorrowDate.setUTCDate(tomorrowDate.getUTCDate() + 1);
-  const tomorrow = tomorrowDate.toISOString().slice(0, 10);
+  // Never parse Intl-formatted dates: serverless runtimes may emit 15/09/2026
+  // instead of an ISO string even for en-CA. Advancing the Unix timestamp is
+  // locale-independent and still lands on the next local calendar day at DST.
+  const tomorrow = dateKey(now + 86400);
   const relativeDay = (t) => dateKey(t) === today ? 'Today' : dateKey(t) === tomorrow ? 'Tomorrow' : day(t);
   const temp = (n) => n === null ? '—' : `${Math.round(imperial ? n * 9 / 5 + 32 : n)}°${imperial ? 'F' : 'C'}`;
   const wind = (n) => n === null ? '—' : `${Math.round(imperial ? n / 1.609344 : n)} ${imperial ? 'mph' : 'km/h'}`;

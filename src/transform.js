@@ -169,14 +169,24 @@ if (typeof module !== 'undefined') module.exports = { run };
 // Coordinates are viewBox units; no smoothing or invented weather values.
 function weatherRibbon(rows, solar, selected, now, fmt, relativeDay, temp) {
  if (!rows.length) return null;
+ // A decision graphic needs enough scale to read. Show at most 24 hours and,
+ // when the recommendation is later, move the viewport so the whole window
+ // remains visible with a little context before it starts.
+ const allStart=rows[0].start, allEnd=rows[rows.length-1].end, span=24*3600;
+ let viewStart=allStart;
+ if(selected&&selected.start>allStart+18*3600)viewStart=Math.max(allStart,selected.start-6*3600);
+ if(selected&&selected.end>viewStart+span)viewStart=Math.max(allStart,selected.end-span);
+ const viewEnd=Math.min(allEnd,viewStart+span);
+ rows=rows.filter(r=>r.end>viewStart&&r.start<viewEnd);
+ if(!rows.length)return null;
  const start=rows[0].start, end=rows[rows.length-1].end;
  if (!(end>start)) return null;
  const x=t=>Math.round((40+880*(t-start)/(end-start))*100)/100;
  const temperatures=rows.map(r=>r.t).filter(t=>t!==null);
  const lo=temperatures.length?Math.min(...temperatures):0, hi=temperatures.length?Math.max(...temperatures):1;
  const y=t=>Math.round((155-55*(t-lo)/Math.max(4,hi-lo))*100)/100;
- const step=Math.max(1,Math.ceil(rows.length/6));
- const points=[], bars=[], labels=[], nights=[], events=[];
+ const step=Math.max(1,Math.ceil(rows.length/5));
+ const points=[], bars=[], labels=[], nights=[], events=[], dayMarkers=[];
  let previous=null;
  for (let i=0;i<rows.length;i++) {
   const r=rows[i];
@@ -184,7 +194,8 @@ function weatherRibbon(rows, solar, selected, now, fmt, relativeDay, temp) {
   previous=r.t===null?null:r.end;
   const p=r.p!==null&&r.p>=0&&r.p<=100?r.p:null;
   bars.push({x:x(r.start)+1,width:Math.max(1,x(r.end)-x(r.start)-2),y:p===null?260:260-p*.6,height:p===null?0:p*.6,unknown:p===null});
-  if(i%step===0) labels.push({x:x(r.start),time:fmt(r.start),day:relativeDay(r.start),temperature:temp(r.t),ty:r.t===null?135:y(r.t)-10,probability:p===null?'?':Math.round(p)+'%',icon:r.code===null?'unknown':r.code>=95?'storm':r.code>=71&&r.code<=77?'snow':r.code>=51?'rain':r.code===0?'sun':'cloud'});
+  if(i%step===0) labels.push({x:x(r.start),time:fmt(r.start),day:relativeDay(r.start),temperature:temp(r.t),ty:r.t===null?135:y(r.t)-10,probability:p===null?'?':Math.round(p)+'%',icon:Math.abs(x(r.start)-x(now))<35?'none':r.code===null?'unknown':r.code>=95?'storm':r.code>=71&&r.code<=77?'snow':r.code>=51?'rain':r.code===0?'sun':'cloud'});
+  if(i===0||relativeDay(r.start)!==relativeDay(rows[i-1].start))dayMarkers.push({x:x(r.start),label:relativeDay(r.start)});
  }
  // Only shade intervals on days with known sunrise and sunset.
  for(const d of solar) {
@@ -197,7 +208,9 @@ function weatherRibbon(rows, solar, selected, now, fmt, relativeDay, temp) {
   }
   for(const [t,label] of [[rise,'Sunrise'],[set,'Sunset']])if(t>=start&&t<=end)events.push({x:x(t),label});
  }
- return {path:points.join(' '),bars,labels,nights,events,
-  selection:selected?{x:x(selected.start),width:x(selected.end)-x(selected.start)}:null,
-  range:relativeDay(start)+' '+fmt(start)+' – '+relativeDay(end)+' '+fmt(end)};
+ const selectedStart=selected?Math.max(start,selected.start):null, selectedEnd=selected?Math.min(end,selected.end):null;
+ const selection=selected&&selectedEnd>selectedStart?{x:x(selectedStart),width:x(selectedEnd)-x(selectedStart)}:null;
+ return {path:points.join(' '),bars,labels,nights,events,dayMarkers,selection,
+  nowX:now>start&&now<end?x(now):null,
+  range:'NEXT 24 HOURS · '+relativeDay(start)+' '+fmt(start)+'–'+relativeDay(end)+' '+fmt(end)};
 }

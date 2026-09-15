@@ -42,10 +42,12 @@ function checkWeather(run) {
  test('rain amount excludes otherwise low probability',()=>!run(data,now).found);
  data=fixture();now=stamp('2026-09-14T20:08:00Z');r=run(data,now);
  test('ribbon selection has positive width',()=>r.ribbon.selection.width>0);
- const first=data.hourly.time.find(t=>t+3600>now);
- const final=stamp('2026-09-15T22:00:00Z');
- const expected=40+880*(stamp('2026-09-15T06:00:00Z')-first)/(final-first);
+ const chartStart=stamp('2026-09-14T20:00:00Z');
+ const chartEnd=stamp('2026-09-15T20:00:00Z');
+ const expected=40+880*(stamp('2026-09-15T06:00:00Z')-chartStart)/(chartEnd-chartStart);
  test('ribbon selection aligns with actual start timestamp',()=>Math.abs(r.ribbon.selection.x-expected)<0.02);
+ test('outlook is focused to 24 hours',()=>r.ribbon.range==='NEXT 24 HOURS · Today 22:00–Tomorrow 22:00');
+ test('current time marker remains visible',()=>r.ribbon.nowX>40&&r.ribbon.nowX<920);
  test('night shading exists for overnight outlook',()=>r.ribbon.nights.length>0);
  data=fixture();data.hourly.temperature_2m[22]=null;
  r=run(data,now);
@@ -81,6 +83,8 @@ function checkWeather(run) {
  data=fixture();data.trmnl={plugin_settings:{custom_fields_values:{daylight_mode:'any'}}};data.hourly.temperature_2m.fill(null);data.hourly.wind_speed_10m.fill(null);r=run(data,stamp('2026-09-14T14:08:00Z'));
  test('missing supporting values stay explicit',()=>r.found&&r.temperature==='Temperature unavailable'&&r.wind==='Wind unavailable');
  data=fixture();now=stamp('2026-09-14T14:08:00Z');r=run(data,now);
+ test('current outlook includes a now marker',()=>r.ribbon.nowX>40&&r.ribbon.nowX<920);
+ test('weather icon does not collide with now marker',()=>r.ribbon.labels[0].icon==='none');
  test('successful refresh has explicit state',()=>r.state==='ok'&&r.checkedAt===now);
  test('model issue time is not invented',()=>r.modelIssuedAt===null&&r.updated.startsWith('Checked '));
  r=run({error:'upstream timeout'},now);

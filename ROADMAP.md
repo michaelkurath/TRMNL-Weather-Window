@@ -95,6 +95,14 @@ Acceptance: every recommendation can be traced to input data and settings. Do no
 - [x] Evaluate whether two six-hour rows remain the clearest Full presentation using actual screenshots.
 Acceptance: a user can identify when to go and the main tradeoff within a few seconds.
 
+### WW-06B: Full visual polish — IN PROGRESS
+- [x] Focus the decision chart to a readable 24-hour horizon around the recommendation.
+- [x] Replace dense night hatching and the heavy selection box with quieter, direct visual signals.
+- [x] Add an exact now marker and reduce repeated axis labels.
+- [ ] Visually approve realistic, delayed-window, missing-data and no-window Full renders on OG and X.
+- [ ] Apply the approved visual language to compact layouts without shrinking Full.
+Acceptance: the Full view reads as a finished decision display rather than a chart prototype; the recommendation is obvious without relying on a legend.
+
 ## M3 — Personal relevance
 
 ### WW-07: Activity presets with editable limits
@@ -137,7 +145,7 @@ Acceptance: each view remains useful without squeezing Full into less space.
 - [x] Record test commands, source revision and known limitations in PRs.
 Acceptance: another contributor can reproduce tests and import a known version.
 
-### WW-11: Documentation and release review
+### WW-11: Documentation and release review — PAUSED UNTIL WW-06B
 - [ ] Correct TRMNL-compatible LICENSE.
 - [ ] README: purpose, installation, settings, forecast interpretation and limitations.
 - [ ] Recipe ↔ GitHub links, short description, sources/credits and icon.

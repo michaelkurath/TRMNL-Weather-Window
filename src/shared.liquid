@@ -117,3 +117,74 @@
 <style>
 .title_bar .instance { max-width: 55%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 </style>
+
+{% template editorial_hero %}
+<div class="ww-small-hero">
+  <div class="ww-small-eyebrow">{{ headline | escape }}</div>
+  <div class="ww-small-time{% unless found %} ww-small-time--message{% endunless %}">{{ window | escape }}</div>
+  {% if found %}
+    <div class="ww-small-date">{{ date | escape }} · {{ risk | escape }}</div>
+    {% unless minimal %}<div class="ww-small-weather">{{ temperature | escape }} · {{ wind | escape }}</div>{% endunless %}
+  {% endif %}
+  {% unless minimal and found %}<div class="ww-small-reason">{{ detail | escape }}</div>{% endunless %}
+</div>
+{% endtemplate %}
+
+{% template editorial_strip %}
+<svg class="ww-editorial-strip" viewBox="0 0 960 {% if minimal %}220{% else %}285{% endif %}" preserveAspectRatio="none" role="img" aria-label="{% if minimal %}Hourly rain probability{% else %}Hourly temperature and rain probability{% endif %}. Top black rail marks the likely dry window.">
+  <text x="40" y="28" font-size="30" font-weight="700">{% if found %}LIKELY DRY{% else %}OUTLOOK{% endif %}</text>
+  <line x1="40" y1="46" x2="920" y2="46" stroke="black" stroke-width="2"/>
+  {% if ribbon.selection %}<rect x="{{ ribbon.selection.x }}" y="40" width="{{ ribbon.selection.width }}" height="12" rx="6" fill="black"/>{% endif %}
+  {% unless minimal %}
+  <text x="40" y="83" font-size="28" font-weight="700">TEMP</text>
+  <path d="{{ ribbon.path }}" transform="translate(0,-15)" fill="none" stroke="black" stroke-width="5"/>
+  {% endunless %}
+  <text x="40" y="{% if minimal %}90{% else %}158{% endif %}" font-size="28" font-weight="700">RAIN %</text>
+  <g transform="translate(0,{% if minimal %}-90{% else %}-35{% endif %})">
+  {% for bar in ribbon.bars %}
+    {% if bar.unknown %}<text x="{{ bar.x }}" y="254" font-size="32">?</text>
+    {% else %}<rect x="{{ bar.x }}" y="{{ bar.y }}" width="{{ bar.width }}" height="{{ bar.height }}" fill="black"/>{% endif %}
+  {% endfor %}
+  </g>
+  <line x1="40" y1="{% if minimal %}170{% else %}225{% endif %}" x2="920" y2="{% if minimal %}170{% else %}225{% endif %}" stroke="black" stroke-width="2"/>
+  {% for tick in ribbon.labels %}
+    {% assign alternate = forloop.index0 | modulo: 2 %}
+    {% if alternate == 0 %}
+      <text x="{{ tick.x }}" y="{% if minimal %}199{% else %}254{% endif %}" text-anchor="middle" font-size="32">{{ tick.time }}</text>
+      <text x="{{ tick.x }}" y="{% if minimal %}220{% else %}279{% endif %}" text-anchor="middle" font-size="25">{{ tick.day }}</text>
+    {% endif %}
+  {% endfor %}
+</svg>
+{% endtemplate %}
+<style>
+.ww-small { container-type:inline-size; display:flex; flex-direction:column; align-items:stretch; justify-content:flex-start; padding:12px 14px 8px; gap:8px; color:#000; font-family:Arial,Helvetica,sans-serif; }
+.ww-small-eyebrow { font-size:13px; font-weight:700; }
+.ww-small-time { font-size:38px; line-height:1.08; font-weight:700; letter-spacing:-1px; margin:3px 0 6px; white-space:nowrap; }
+.ww-small-time--message { font-size:25px; white-space:normal; overflow-wrap:break-word; }
+.ww-small-date { font-size:13px; line-height:1.3; }
+.ww-small-weather { font-size:15px; line-height:1.4; margin-top:7px; }
+.ww-small-reason { font-size:13px; line-height:1.3; margin-top:7px; }
+.ww-small-source { margin-top:auto; font-size:10px; line-height:1.2; }
+.ww-small-body { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:24px; align-items:start; }
+.ww-small-chart { min-width:0; width:100%; border-top:1px solid #000; padding-top:6px; }
+.ww-editorial-strip { display:block; width:100%; height:128px; font-family:Arial,Helvetica,sans-serif; overflow:visible; }
+.ww-small--horizontal .ww-small-weather { font-size:13px; margin-top:4px; }
+.ww-small--vertical .ww-small-time { font-size:44px; }
+.ww-small--vertical .ww-small-time--message { font-size:29px; }
+.ww-small--vertical .ww-small-chart { margin-top:8px; }
+.ww-small--vertical .ww-editorial-strip { height:165px; }
+.ww-small--quadrant { gap:5px; padding:8px 12px 6px; }
+.ww-small--quadrant .ww-small-time { font-size:32px; margin:2px 0 4px; }
+.ww-small--quadrant .ww-small-time--message { font-size:23px; }
+.ww-small--quadrant .ww-small-date { font-size:12px; }
+.ww-small--quadrant .ww-small-reason { font-size:12px; margin-top:4px; }
+.ww-small--quadrant .ww-editorial-strip { height:66px; }
+@container(min-width:450px) {
+  .ww-small--vertical .ww-small-time { font-size:56px; }
+  .ww-small--vertical .ww-small-time--message { font-size:36px; }
+  .ww-small--vertical .ww-editorial-strip { height:220px; }
+  .ww-small--quadrant .ww-small-time { font-size:40px; }
+  .ww-small--quadrant .ww-small-time--message { font-size:27px; }
+  .ww-small--quadrant .ww-editorial-strip { height:100px; }
+}
+</style>

@@ -13,10 +13,8 @@ Product principles:
 - GitHub is the source of truth. Prefer existing Framework components, serverless transformation and direct polling; add infrastructure only for demonstrated needs.
 - A completed implementation is not a validated release.
 
-## Current status — 14 September 2026
-PR [#1](https://github.com/michaelkurath/TRMNL-Weather-Window/pull/1) merged at explicit user request.
-TRMNL synchronization and live-device behavior are not yet confirmed.
-Baseline Node regression tests and trmnlp OG/X renders ran successfully via GitHub Actions. Live polling returned HTTP 200 and the user confirmed recovery. Visual screenshot inspection is still pending; artifact download alone is not visual review.
+## Current status — 15 September 2026
+Native location entry, daylight-aware selection and the graphical Full weather ribbon are merged. The user confirmed live TRMNL operation after the locale-dependent serverless date failure was fixed in PR #6. Node regression tests, live polling and trmnlp OG/X renders run on every pull request; generated Full previews have been visually inspected.
 
 ### Implemented
 - [x] Four initial layouts and configurable location, rain limit, duration and units.
@@ -25,7 +23,9 @@ Baseline Node regression tests and trmnlp OG/X renders ran successfully via GitH
 - [x] Overnight wording and a non-duplicating location fallback.
 - [x] Full: two rows of six hours, larger X typography and less repetitive dry labels.
 - [x] Full: attribution in normal layout flow.
-- [x] Ten regression checks and [layout review matrix](docs/layout-review.md).
+- [x] Thirty-five regression checks and [layout review matrix](docs/layout-review.md).
+- [x] Graphical Full weather ribbon with temperature, rain, daylight and exact window alignment.
+- [x] Locale-independent serverless date handling and automatic PR validation.
 
 ## Milestones
 
@@ -50,18 +50,18 @@ No calendar promises until rendering and live-data validation are available.
 Acceptance: no unexplained blank screen, clipped content or ambiguous endpoint in the documented matrix. Save reviewed screenshots with the relevant source revision.
 
 ### WW-02: Strengthen forecast correctness
-- [ ] Verify upstream timestamp and precipitation-interval interpretation against primary documentation.
-- [ ] Normalize settings; invalid values use documented defaults.
-- [ ] Test midnight, year rollover, DST, non-whole-hour time zones, gaps and duplicate/out-of-order timestamps.
-- [ ] Test partial current hours, exact minimum durations and truncated/stale forecasts.
-- [ ] Test imperial conversions, negative temperatures and missing temperature/wind.
-- [ ] Distinguish “no suitable window” from “not enough forecast data.”
-- [ ] Give unknown values an explicit state; do not silently discard uncertainty.
+- [x] Verify upstream timestamp and precipitation-interval interpretation against primary documentation.
+- [x] Normalize settings; invalid values use documented defaults.
+- [x] Test midnight, year rollover, DST, non-whole-hour time zones, gaps and duplicate/out-of-order timestamps.
+- [x] Test partial current hours, exact minimum durations and truncated/stale forecasts.
+- [x] Test imperial conversions, negative temperatures and missing temperature/wind.
+- [x] Distinguish “no suitable window” from “not enough forecast data.”
+- [x] Give unknown values an explicit state; do not silently discard uncertainty.
 Acceptance: deterministic fixtures cover each case; the interval shown and its supporting values describe the same period.
 
 ### WW-03: Freshness and graceful failure
 - [ ] Distinguish “checked at” from forecast/model issue time; never invent unavailable timestamps.
-- [ ] Define and document stale-data behavior and a visible stale/unavailable state.
+- [x] Define and document stale-data behavior and a visible stale/unavailable state.
 - [ ] Verify polling failures and recovery without adding a backend by default.
 - [ ] If retaining previous data is supported, label its age; otherwise show unavailable.
 Acceptance: a failed update cannot make old or absent data appear current.
@@ -175,6 +175,9 @@ With Node installed:
 ```sh
 node -e "console.log(require('./test/weather.js').checkWeather(require('./src/transform.js').run))"
 ```
+
+## WW-02 implementation update
+Open-Meteo documents hourly precipitation as a preceding-hour sum/average while temperature and wind speed are instantaneous values. The transform therefore evaluates rain at an interval’s end timestamp and supporting temperature/wind at its start. Settings use documented defaults when invalid. Locale-independent date keys, stale/truncated/incomplete states, and deterministic timezone/data-gap fixtures cover the remaining WW-02 acceptance cases.
 
 ## WW-06 implementation update
 Full now uses a timestamp-aligned SVG weather ribbon: weather-code icons, temperature line with missing-value gaps, 0–100% rain bars, known night shading and an exact next-window outline. Smaller views retain compact timelines. Chart geometry is computed in the transform. Tests cover time alignment and missing data; OG/X rendering and visual review use the CI workflow.

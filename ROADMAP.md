@@ -96,6 +96,8 @@ Acceptance: every recommendation can be traced to input data and settings. Do no
 Acceptance: a user can identify when to go and the main tradeoff within a few seconds.
 
 ### WW-06B: Full visual polish — IN PROGRESS
+- User review rejected the initial V2 as insufficiently polished. Do not treat PR #13 as final visual acceptance.
+- Current revision: left-aligned decision header, separate supporting conditions, explicit sans-serif chart typography, dedicated selection rail, numeric rain labels and night indication confined to a narrow strip.
 - [x] Focus the decision chart to a readable 24-hour horizon around the recommendation.
 - [x] Replace dense night hatching and the heavy selection box with quieter, direct visual signals.
 - [x] Add an exact now marker and reduce repeated axis labels.

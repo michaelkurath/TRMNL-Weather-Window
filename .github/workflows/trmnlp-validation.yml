@@ -9,7 +9,7 @@ permissions:
 jobs:
   preview:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: ruby/setup-ruby@v1
@@ -46,43 +46,34 @@ jobs:
           set -o pipefail
           mkdir -p diagnostics
           trmnlp build 2>&1 | tee diagnostics/live-build.log
-      - name: Prepare deterministic sample for layout checks
+      - name: Render OG/X stress matrix
         run: |
-          ruby -ryaml -rjson -e '
-            settings = YAML.load_file("src/settings.yml")
-            base = (Time.now.to_i / 86400) * 86400
-            times = (0..72).map { |i| base + i * 3600 }
-            hours = times.map { |t| Time.at(t).utc.hour }
-            wet = hours.map { |hour| (9..11).include?(hour) }
-            data = {"timezone"=>"UTC", "daily"=>{"sunrise"=>(0..2).map{|i| base+i*86400+6*3600}, "sunset"=>(0..2).map{|i| base+i*86400+18*3600}}, "hourly"=>{"time"=>times, "temperature_2m"=>hours.map{|hour| 18-((hour-14).abs/2.0)}, "precipitation_probability"=>wet.map{|value| value ? 70 : 10}, "precipitation"=>wet.map{|value| value ? 1.2 : 0}, "wind_speed_10m"=>hours.map{|hour| 5+(hour%5)}, "weather_code"=>wet.map{|value| value ? 61 : 1}}}
-            settings["strategy"] = "static"
-            settings["static_data"] = JSON.generate(data)
-            File.write("src/settings.yml", YAML.dump(settings))
-          '
-      - name: Render OG sample
+          mkdir -p matrix
+          cases=(realistic imperial_long no_window incomplete insufficient outdated daylight_unavailable service_error)
+          for case_name in "${cases[@]}"; do
+            ruby test/prepare_fixture.rb "$case_name"
+            trmnlp build --png --width 800 --height 480 --color-depth 1
+            mv _build "matrix/${case_name}-og"
+            trmnlp build --png --width 1040 --height 780 --color-depth 4
+            mv _build "matrix/${case_name}-x"
+          done
+      - name: Validate and compose review sheets
         run: |
-          trmnlp build --png --width 800 --height 480 --color-depth 1
-          mv _build preview-og
-      - name: Render X sample
-        run: |
-          trmnlp build --png --width 1040 --height 780 --color-depth 4
-          mv _build preview-x
-      - name: Render error-state sample
-        run: |
-          ruby -ryaml -rjson -e 'settings = YAML.load_file("src/settings.yml"); settings["static_data"] = JSON.generate({"error"=>"sample upstream failure"}); File.write("src/settings.yml", YAML.dump(settings))'
-          trmnlp build --png --width 800 --height 480 --color-depth 1
-          mv _build preview-error
-      - name: Expose Full previews for visual review
+          mkdir -p matrix-sheets
+          for folder in matrix/*; do
+            identify "$folder"/*.png
+            name="$(basename "$folder")"
+            montage "$folder/full.png" "$folder/half_horizontal.png" "$folder/half_vertical.png" "$folder/quadrant.png" \
+              -thumbnail 400x300 -tile 2x2 -geometry +6+18 -set label '%t' "matrix-sheets/${name}.png"
+          done
+      - name: Expose matrix sheets for visual review
         run: |
           python3 - <<'PY'
           import base64
           from pathlib import Path
-          for device in ['og', 'x']:
-              for view in ['full', 'half_horizontal', 'half_vertical', 'quadrant']:
-                  path = Path('preview-' + device) / (view + '.png')
-                  print('PREVIEW_' + device.upper() + '_' + view.upper() + '=' + base64.b64encode(path.read_bytes()).decode())
-          path = Path('preview-error/full.png')
-          print('PREVIEW_ERROR=' + base64.b64encode(path.read_bytes()).decode())
+          for path in sorted(Path('matrix-sheets').glob('*.png')):
+              key = path.stem.upper().replace('-', '_')
+              print('MATRIX_' + key + '=' + base64.b64encode(path.read_bytes()).decode())
           PY
       - name: Save previews and diagnostics
         if: always()
@@ -90,9 +81,8 @@ jobs:
         with:
           name: weather-window-trmnlp
           path: |
-            preview-og/
-            preview-x/
-            preview-error/
+            matrix/
+            matrix-sheets/
             _build/
             diagnostics/
           if-no-files-found: warn

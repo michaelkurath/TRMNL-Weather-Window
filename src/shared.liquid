@@ -34,9 +34,9 @@
   </div>
 </div>
 {% endtemplate %}
-<style>
-.ww-footnote { position: absolute; bottom: 38px; left: 16px; right: 16px; font-size: 12px; color: #000; }
-</style>
+{% template compact_meta %}
+<span class="label label--small 1bit:text--black">{{ updated | escape }} · {{ zone | escape }} · Open-Meteo</span>
+{% endtemplate %}
 
 {% template weather_ribbon %}
 <svg class="ww-ribbon" viewBox="0 0 960 330" role="img" aria-label="Hourly temperature and rain probability. Outlined region is the next window; hatched regions are night.">
@@ -76,4 +76,32 @@
 {% endtemplate %}
 <style>
 .ww-ribbon { display: block; width: 100%; height: auto; flex-shrink: 0; font-family: inherit; color: #000; }
+</style>
+
+{% template weather_strip %}
+<svg class="ww-strip{% if compact %} ww-strip--compact{% endif %}" viewBox="0 0 960 {% if compact %}170{% else %}200{% endif %}" role="img" aria-label="Compact hourly temperature and rain outlook. The outlined region is the next window.">
+  <defs>
+    <pattern id="ww-strip-night" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M0 10L10 0" stroke="#999" stroke-width="1"/></pattern>
+  </defs>
+  {% for band in ribbon.nights %}<rect x="{{ band.x }}" y="12" width="{{ band.width }}" height="158" fill="url(#ww-strip-night)"/>{% endfor %}
+  <text x="42" y="28" font-size="18">TEMP</text>
+  <path d="{{ ribbon.path }}" transform="translate(0,-70)" fill="none" stroke="black" stroke-width="5"/>
+  <text x="42" y="112" font-size="18">RAIN</text>
+  <line x1="40" y1="170" x2="920" y2="170" stroke="black" stroke-width="2"/>
+  <g transform="translate(0,-90)">
+  {% for bar in ribbon.bars %}
+    {% if bar.unknown %}<text x="{{ bar.x }}" y="250" font-size="24">?</text>
+    {% else %}<rect x="{{ bar.x }}" y="{{ bar.y }}" width="{{ bar.width }}" height="{{ bar.height }}" fill="black"/>{% endif %}
+  {% endfor %}
+  </g>
+  {% if ribbon.selection %}<rect x="{{ ribbon.selection.x }}" y="10" width="{{ ribbon.selection.width }}" height="162" rx="7" fill="none" stroke="black" stroke-width="5"/>{% endif %}
+  {% unless compact %}
+  {% for tick in ribbon.labels %}<text x="{{ tick.x }}" y="196" text-anchor="middle" font-size="20">{{ tick.time | escape }}</text>{% endfor %}
+  {% endunless %}
+</svg>
+{% endtemplate %}
+<style>
+.ww-strip { display: block; width: 100%; height: auto; min-width: 0; flex-shrink: 1; font-family: inherit; color: #000; }
+.ww-strip--compact { max-height: 72px; }
+.ww-compact-meta { width: 100%; }
 </style>

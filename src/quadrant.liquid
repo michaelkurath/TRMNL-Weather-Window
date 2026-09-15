@@ -1,5 +1,11 @@
-<div class="layout layout--col layout--left gap--medium">
-{% render 'hero', headline: headline, window: window, found: found, date: date, risk: risk, temperature: temperature, wind: wind, detail: detail, size: 'value--small lg:value--medium' %}
+<div class="layout layout--col layout--left gap--small">
+  <div class="flex flex--col gap--xsmall w--full">
+    <span class="label label--small 1bit:text--black">{{ headline | escape }}</span>
+    <span class="value value--small lg:value--medium">{{ window | escape }}</span>
+    {% if found %}<span class="label label--small 1bit:text--black">{{ date | escape }} · {{ risk | escape }}</span>{% endif %}
+    <span class="label label--small 1bit:text--black">{{ detail | escape }}</span>
+  </div>
+  {% if ribbon %}{% render 'weather_strip', ribbon: ribbon, compact: true %}{% endif %}
+  <div class="ww-compact-meta">{% render 'compact_meta', updated: updated, zone: zone %}</div>
 </div>
-<div class="ww-footnote">{{ updated | escape }} · {{ zone | escape }} · Open-Meteo (CC BY 4.0)</div>
 {% render 'title_bar', location: location %}

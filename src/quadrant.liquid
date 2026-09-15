@@ -1,11 +1,6 @@
-<div class="layout layout--col layout--left gap--small">
-  <div class="flex flex--col gap--xsmall w--full">
-    <span class="label label--small 1bit:text--black">{{ headline | escape }}</span>
-    <span class="value value--small lg:value--medium">{{ window | escape }}</span>
-    {% if found %}<span class="label label--small 1bit:text--black">{{ date | escape }} · {{ risk | escape }}</span>{% endif %}
-    <span class="label label--small 1bit:text--black">{{ detail | escape }}</span>
-  </div>
-  {% if ribbon %}{% render 'weather_strip', ribbon: ribbon, compact: true %}{% endif %}
-  <div class="ww-compact-meta">{% render 'compact_meta', updated: updated, zone: zone %}</div>
+<div class="layout ww-small ww-small--quadrant">
+  {% render 'editorial_hero', headline: headline, window: window, found: found, date: date, risk: risk, detail: detail, minimal: true %}
+  {% if ribbon %}<div class="ww-small-chart">{% render 'editorial_strip', ribbon: ribbon, found: found, minimal: true %}</div>{% endif %}
+  <div class="ww-small-source">{{ updated | escape }} · Open-Meteo</div>
 </div>
 {% render 'title_bar', location: location %}

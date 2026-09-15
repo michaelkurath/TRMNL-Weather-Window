@@ -90,6 +90,18 @@ function checkWeather(run) {
  data=fixture();r=run(data,stamp('2026-09-18T00:00:00Z'));
  test('outdated state does not claim current data',()=>r.state==='outdated'&&r.detail.includes('not shown as current'));
  test('empty input has unavailable state',()=>run({},now).state==='unavailable');
+ data=fixture();now=stamp('2026-09-14T14:08:00Z');r=run(data,now);
+ test('next mode is explicit and current dry reason is traceable',()=>r.selectionMode==='next'&&r.reason==='No rain expected during this window.');
+ data=fixture();data.trmnl={plugin_settings:{custom_fields_values:{daylight_mode:'any'}}};data.hourly.precipitation_probability[15]=80;data.hourly.precipitation_probability[16]=80;r=run(data,now);
+ test('delayed window explains improving rain',()=>r.found&&!r.window.startsWith('Now')&&r.reason==='Starts after rain conditions improve.');
+ data=fixture();data.hourly.weather_code.fill(95);r=run(data,now);
+ test('no-window explanation identifies thunderstorms',()=>!r.found&&r.reason.includes('Thunderstorms'));
+ data=fixture();data.hourly.precipitation_probability.fill(80);r=run(data,now);
+ test('no-window explanation identifies rain probability',()=>!r.found&&r.reason==='Rain probability exceeds 20%.');
+ data=fixture();data.hourly.precipitation.fill(2);r=run(data,now);
+ test('no-window explanation identifies precipitation amount',()=>!r.found&&r.reason.includes('Precipitation amount'));
+ data=fixture();data.trmnl={plugin_settings:{custom_fields_values:{daylight_mode:'any',minimum_hours:'2'}}};for(let i=15;i<data.hourly.time.length;i+=2)data.hourly.precipitation_probability[i]=80;r=run(data,now);
+ test('fragmented dry periods explain minimum duration',()=>!r.found&&r.reason.includes('shorter than 2 hours'));
  return passed;
 }
 if(typeof module!=='undefined')module.exports={checkWeather};

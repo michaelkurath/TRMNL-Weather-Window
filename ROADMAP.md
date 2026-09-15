@@ -23,7 +23,7 @@ Native location entry, daylight-aware selection and the graphical Full weather r
 - [x] Overnight wording and a non-duplicating location fallback.
 - [x] Full: two rows of six hours, larger X typography and less repetitive dry labels.
 - [x] Full: attribution in normal layout flow.
-- [x] Forty-one regression checks and [layout review matrix](docs/layout-review.md).
+- [x] Forty-seven regression checks and [layout review matrix](docs/layout-review.md).
 - [x] Graphical Full weather ribbon with temperature, rain, daylight and exact window alignment.
 - [x] Locale-independent serverless date handling and automatic PR validation.
 
@@ -78,21 +78,21 @@ Acceptance: a failed update cannot make old or absent data appear current.
 Acceptance: nighttime is not recommended in daylight mode; missing daylight data is not silently treated as daylight.
 
 ### WW-05: Next versus best window
-- [ ] Preserve “Next suitable window” as the predictable default.
+- [x] Preserve “Next suitable window” as the predictable default.
 - [ ] Add best-window selection only after defining explainable ranking.
-- [ ] Apply hard limits first; rank eligible windows by documented preferences.
-- [ ] Deterministic tie-break: earliest start; avoid unexplained changes on unchanged data.
+- [x] Apply hard limits first; rank eligible windows by documented preferences.
+- [x] Deterministic tie-break: earliest start; avoid unexplained changes on unchanged data.
 - [ ] Consider one alternative only when it materially improves the decision.
-- [ ] Explain the selection with short reasons such as “Lower rain risk, lighter wind.”
-- [ ] If nothing qualifies, explain the limiting condition rather than calling an unsuitable interval good.
+- [x] Explain the selection with short reasons such as “Lower rain risk, lighter wind.”
+- [x] If nothing qualifies, explain the limiting condition rather than calling an unsuitable interval good.
 Acceptance: every recommendation can be traced to input data and settings. Do not present an arbitrary score as a forecast probability.
 
 ### WW-06: Decision-focused visual design
-- [ ] Hero: window + duration + one short reason.
-- [ ] Timeline: clearly highlight the selected interval and show upcoming changes.
-- [ ] Label partial/unknown intervals and overnight transitions.
-- [ ] Show temperature and wind as supporting context, not competing headlines.
-- [ ] Evaluate whether two six-hour rows remain the clearest Full presentation using actual screenshots.
+- [x] Hero: window + duration + one short reason.
+- [x] Timeline: clearly highlight the selected interval and show upcoming changes.
+- [x] Label partial/unknown intervals and overnight transitions.
+- [x] Show temperature and wind as supporting context, not competing headlines.
+- [x] Evaluate whether two six-hour rows remain the clearest Full presentation using actual screenshots.
 Acceptance: a user can identify when to go and the main tradeoff within a few seconds.
 
 ## M3 — Personal relevance
@@ -182,5 +182,8 @@ Open-Meteo documents hourly precipitation as a preceding-hour sum/average while 
 ## WW-03 implementation update
 Every transform result now carries a machine-readable state: `ok`, `no_window`, `insufficient`, `incomplete`, `outdated`, `daylight_unavailable`, `service_error` or `unavailable`. The visible footer reports evaluation time as “Checked”; no model-issue timestamp is invented. The transform retains no prior response. HTTP failures before transform execution remain TRMNL-managed and are documented as a platform boundary.
 
+## WW-05 implementation update
+Selection remains deterministic `next`: hard eligibility limits are applied first and the earliest qualifying interval wins. The result explains why a delayed window begins, while unsuccessful searches identify the dominant blocker. Best-window ranking and alternatives remain deferred until an explainable preference model exists.
+
 ## WW-06 implementation update
-Full now uses a timestamp-aligned SVG weather ribbon: weather-code icons, temperature line with missing-value gaps, 0–100% rain bars, known night shading and an exact next-window outline. Smaller views retain compact timelines. Chart geometry is computed in the transform. Tests cover time alignment and missing data; OG/X rendering and visual review use the CI workflow.
+Full now uses a timestamp-aligned SVG weather ribbon: weather-code icons, temperature line with missing-value gaps, 0–100% rain bars, known night shading and an exact next-window outline. Smaller views retain compact timelines. Chart geometry is computed in the transform. Tests cover time alignment and missing data; OG/X rendering and visual review use the CI workflow. The deterministic visual fixture now includes temperature variation and a rain band instead of an unrealistically flat all-dry forecast.

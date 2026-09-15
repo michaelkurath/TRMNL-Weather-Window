@@ -1,6 +1,6 @@
 <div class="layout ww-small ww-small--quadrant">
   {% render 'editorial_hero', headline: headline, window: window, found: found, date: date, risk: risk, detail: detail, minimal: true %}
-  {% if ribbon %}<div class="ww-small-chart">{% render 'editorial_strip', ribbon: ribbon, found: found, minimal: true %}</div>{% endif %}
+  {% if ribbon and found %}<div class="ww-small-chart">{% render 'editorial_strip', ribbon: ribbon, found: found, minimal: true %}</div>{% endif %}
   <div class="ww-small-source">{{ updated | escape }} · Open-Meteo</div>
 </div>
 {% render 'title_bar', location: location %}

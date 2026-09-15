@@ -1,36 +1,29 @@
-# Full-layout review
+# Layout review matrix
 
-Draft implementation; no rendered screenshot acceptance yet.
+Automated by `.github/workflows/trmnlp-validation.yml` using `test/prepare_fixture.rb`.
+Every pull request renders all four views at OG (800×480, 1-bit) and X
+(1040×780, 4-bit) for each case. The workflow stores individual PNGs and
+labelled 2×2 review sheets.
 
-## Changes
-- Top-aligned hero and a chronological six-column grid, wrapping after hour six.
-- Larger rain and temperature typography on X.
-- Filled probability labels mean likely dry; a single legend replaces repeated DRY text.
-- Non-dry hours retain WET, STORM or ? labels.
-- Source/check time appears in normal document flow.
-- Empty hours hide the timeline while retaining the unavailable hero.
-- Smaller layouts retain their current compact rendering.
-
-## Required screenshots before merge
-Capture Full on OG and X for each case below, using trmnlp when available.
-
-| Case | Check |
+| Fixture | Primary risk |
 | --- | --- |
-| Twelve dry hours | Two rows of six, legible percentages and temperatures, no overflow |
-| Mixed dry/wet | Labels and filled indicators agree with forecast state |
-| Thunderstorms | STORM visible even with 0% precipitation probability |
-| Missing probabilities | Unknown marker visible; not represented as dry |
-| No hourly data | Forecast unavailable hero and attribution; no empty timeline heading |
-| Overnight window | Time and date wording fit |
-| Long location, imperial units | Title bar and negative/three-digit temperatures fit |
-| Partial forecast | Chronological order and boundary wording remain clear |
+| realistic | Temperature changes, rain bars, selected-window alignment |
+| imperial_long | Long location, mph, negative Fahrenheit values |
+| no_window | Limiting-condition explanation without a selection |
+| incomplete | Missing rain, temperature and wind values |
+| insufficient | Forecast horizon shorter than requested duration |
+| outdated | Expired coverage must not look current |
+| daylight_unavailable | Missing sunrise/sunset response |
+| service_error | Upstream error with no cached-data implication |
 
-Compare OG and X separately. Inspect 1-bit text and all four layouts because shared templates changed.
-Check source attribution does not collide with the title bar.
+Review each sheet for clipped text, title-bar collisions, readable 1-bit
+contrast, visible unknown/error states and consistent meaning across layouts.
+TRMNL X emulation remains limited by trmnlp's fixed 800 px design-system
+wrapper: the X PNG dimensions and responsive classes are exercised, but final
+physical-device validation is still required.
 
-## Validation status
-Static markup review only. Execution tooling is unavailable, so Liquid rendering, font fit and screenshot review are pending. These changes must remain a draft until visual validation is completed.
+## Current status
 
-Framework references:
-- https://trmnl.com/framework/docs/3.3/layout
-- https://trmnl.com/framework/docs/3.3/text_size
+The matrix is reproducible in CI. The realistic compact-layout batch was
+visually reviewed at source revision `3f37e98`. Full matrix acceptance is
+recorded in the pull request that introduces this file revision.

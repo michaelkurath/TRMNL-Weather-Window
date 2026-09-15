@@ -124,14 +124,14 @@ Acceptance: first successful setup requires only location and optional activity 
 - [x] Half Horizontal: window plus compact upcoming conditions.
 - [x] Half Vertical: window plus a short vertical outlook.
 - [x] Quadrant: window and the single most useful supporting detail.
-- [ ] Test OG and X independently; include long text, units, missing values and all states.
+- [x] Test OG and X independently; include long text, units, missing values and all states.
 - [x] Remove smaller-layout absolute footnotes where they cause collisions.
 - [x] Use 1-bit legible text and signals that do not rely on color.
 Acceptance: each view remains useful without squeezing Full into less space.
 
 ### WW-10: Reproducible development and packaging
-- [ ] Restore/extend sample fixtures and reproducible trmnlp rendering.
-- [ ] Add automated forecast validation to CI.
+- [x] Restore/extend sample fixtures and reproducible trmnlp rendering.
+- [x] Add automated forecast validation to CI.
 - [ ] Add import ZIP generation with settings.yml at archive root and verify archive contents.
 - [ ] Keep candidate UI changes on branches; review screenshots before routine merges.
 - [ ] Record test commands, source revision and known limitations in PRs.
@@ -177,7 +177,7 @@ node -e "console.log(require('./test/weather.js').checkWeather(require('./src/tr
 ```
 
 ## WW-09 implementation update
-Half Horizontal, Half Vertical and Quadrant use dedicated compact SVG strips derived from the same timestamp geometry as Full. They retain the selected-window outline, temperature trend, rain bars and night hatching without shrinking the full chart. Compact attribution participates in normal flow instead of absolute positioning. CI renders all four layouts for OG and X.
+Half Horizontal, Half Vertical and Quadrant use dedicated compact SVG strips derived from the same timestamp geometry as Full. They retain the selected-window outline, temperature trend, rain bars and night hatching without shrinking the full chart. Compact attribution participates in normal flow instead of absolute positioning. CI renders all four layouts for OG and X. A reproducible eight-state stress matrix covers realistic weather, long Imperial content, no window, incomplete and insufficient data, outdated coverage, missing daylight and service errors.
 
 ## WW-02 implementation update
 Open-Meteo documents hourly precipitation as a preceding-hour sum/average while temperature and wind speed are instantaneous values. The transform therefore evaluates rain at an interval’s end timestamp and supporting temperature/wind at its start. Settings use documented defaults when invalid. Locale-independent date keys, stale/truncated/incomplete states, and deterministic timezone/data-gap fixtures cover the remaining WW-02 acceptance cases.

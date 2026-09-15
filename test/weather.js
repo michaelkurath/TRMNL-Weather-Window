@@ -84,6 +84,7 @@ function checkWeather(run) {
  test('missing supporting values stay explicit',()=>r.found&&r.temperature==='Temperature unavailable'&&r.wind==='Wind unavailable');
  data=fixture();now=stamp('2026-09-14T14:08:00Z');r=run(data,now);
  test('current outlook includes a now marker',()=>r.ribbon.nowX>40&&r.ribbon.nowX<920);
+ test('weather icon does not collide with now marker',()=>r.ribbon.labels[0].icon==='none');
  test('successful refresh has explicit state',()=>r.state==='ok'&&r.checkedAt===now);
  test('model issue time is not invented',()=>r.modelIssuedAt===null&&r.updated.startsWith('Checked '));
  r=run({error:'upstream timeout'},now);

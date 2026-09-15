@@ -77,9 +77,12 @@ jobs:
           python3 - <<'PY'
           import base64
           from pathlib import Path
-          for device in ['og', 'x', 'error']:
-              path = Path('preview-' + device) / 'full.png'
-              print('PREVIEW_' + device.upper() + '=' + base64.b64encode(path.read_bytes()).decode())
+          for device in ['og', 'x']:
+              for view in ['full', 'half_horizontal', 'half_vertical', 'quadrant']:
+                  path = Path('preview-' + device) / (view + '.png')
+                  print('PREVIEW_' + device.upper() + '_' + view.upper() + '=' + base64.b64encode(path.read_bytes()).decode())
+          path = Path('preview-error/full.png')
+          print('PREVIEW_ERROR=' + base64.b64encode(path.read_bytes()).decode())
           PY
       - name: Save previews and diagnostics
         if: always()

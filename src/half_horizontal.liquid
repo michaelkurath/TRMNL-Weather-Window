@@ -1,6 +1,8 @@
-<div class="layout layout--row gap--medium">
-{% render 'hero', headline: headline, window: window, found: found, date: date, risk: risk, temperature: temperature, wind: wind, detail: detail, size: 'value--medium lg:value--large' %}
-{% render 'timeline', hours: hours, count: 6 %}
+<div class="layout layout--col layout--top gap--small">
+  <div class="flex flex--row gap--medium w--full">
+    {% render 'hero', headline: headline, window: window, found: found, date: date, risk: risk, temperature: temperature, wind: wind, detail: detail, size: 'value--medium lg:value--large' %}
+    {% if ribbon %}{% render 'weather_strip', ribbon: ribbon %}{% endif %}
+  </div>
+  <div class="ww-compact-meta">{% render 'compact_meta', updated: updated, zone: zone %}</div>
 </div>
-<div class="ww-footnote">{{ updated | escape }} · {{ zone | escape }} · Open-Meteo (CC BY 4.0)</div>
 {% render 'title_bar', location: location %}

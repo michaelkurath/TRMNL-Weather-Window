@@ -120,13 +120,13 @@ Acceptance: first successful setup requires only location and optional activity 
 ## M4 — Polished release
 
 ### WW-09: All layouts and accessibility
-- [ ] Full: window, explanation and hourly context.
-- [ ] Half Horizontal: window plus compact upcoming conditions.
-- [ ] Half Vertical: window plus a short vertical outlook.
-- [ ] Quadrant: window and the single most useful supporting detail.
+- [x] Full: window, explanation and hourly context.
+- [x] Half Horizontal: window plus compact upcoming conditions.
+- [x] Half Vertical: window plus a short vertical outlook.
+- [x] Quadrant: window and the single most useful supporting detail.
 - [ ] Test OG and X independently; include long text, units, missing values and all states.
-- [ ] Remove smaller-layout absolute footnotes where they cause collisions.
-- [ ] Use 1-bit legible text and signals that do not rely on color.
+- [x] Remove smaller-layout absolute footnotes where they cause collisions.
+- [x] Use 1-bit legible text and signals that do not rely on color.
 Acceptance: each view remains useful without squeezing Full into less space.
 
 ### WW-10: Reproducible development and packaging
@@ -175,6 +175,9 @@ With Node installed:
 ```sh
 node -e "console.log(require('./test/weather.js').checkWeather(require('./src/transform.js').run))"
 ```
+
+## WW-09 implementation update
+Half Horizontal, Half Vertical and Quadrant use dedicated compact SVG strips derived from the same timestamp geometry as Full. They retain the selected-window outline, temperature trend, rain bars and night hatching without shrinking the full chart. Compact attribution participates in normal flow instead of absolute positioning. CI renders all four layouts for OG and X.
 
 ## WW-02 implementation update
 Open-Meteo documents hourly precipitation as a preceding-hour sum/average while temperature and wind speed are instantaneous values. The transform therefore evaluates rain at an interval’s end timestamp and supporting temperature/wind at its start. Settings use documented defaults when invalid. Locale-independent date keys, stale/truncated/incomplete states, and deterministic timezone/data-gap fixtures cover the remaining WW-02 acceptance cases.

@@ -1,8 +1,10 @@
-<div class="layout layout--col layout--top gap--small">
-  <div class="flex flex--row gap--medium w--full">
-    {% render 'hero', headline: headline, window: window, found: found, date: date, risk: risk, temperature: temperature, wind: wind, detail: detail, size: 'value--medium lg:value--large' %}
-    {% if ribbon %}{% render 'weather_strip', ribbon: ribbon %}{% endif %}
+<div class="layout ww-small ww-small--horizontal">
+  <div class="ww-small-body">
+    <div class="ww-small-copy">
+      {% render 'editorial_hero', headline: headline, window: window, found: found, date: date, risk: risk, temperature: temperature, wind: wind, detail: detail %}
+    </div>
+    {% if ribbon %}<div class="ww-small-chart">{% render 'editorial_strip', ribbon: ribbon, found: found %}</div>{% endif %}
   </div>
-  <div class="ww-compact-meta">{% render 'compact_meta', updated: updated, zone: zone %}</div>
+  <div class="ww-small-source">{{ updated | escape }} · {{ zone | escape }} · Open-Meteo</div>
 </div>
 {% render 'title_bar', location: location %}

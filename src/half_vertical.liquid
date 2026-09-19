@@ -1,6 +1,6 @@
-<div class="layout layout--col layout--left gap--small">
-  {% render 'hero', headline: headline, window: window, found: found, date: date, risk: risk, temperature: temperature, wind: wind, detail: detail, size: 'value--medium lg:value--large' %}
-  {% if ribbon %}{% render 'weather_strip', ribbon: ribbon %}{% endif %}
-  <div class="ww-compact-meta">{% render 'compact_meta', updated: updated, zone: zone %}</div>
+<div class="layout ww-small ww-small--vertical">
+  {% render 'editorial_hero', headline: headline, window: window, found: found, date: date, risk: risk, temperature: temperature, wind: wind, detail: detail %}
+  {% if ribbon %}<div class="ww-small-chart">{% render 'editorial_strip', ribbon: ribbon, found: found %}</div>{% endif %}
+  <div class="ww-small-source">{{ updated | escape }} · {{ zone | escape }} · Open-Meteo</div>
 </div>
 {% render 'title_bar', location: location %}

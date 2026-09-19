@@ -98,6 +98,7 @@ Acceptance: a user can identify when to go and the main tradeoff within a few se
 ### WW-06B: Full visual polish — IN PROGRESS
 - User review rejected the initial V2 as insufficiently polished. Do not treat PR #13 as final visual acceptance.
 - Current revision: left-aligned decision header, separate supporting conditions, explicit sans-serif chart typography, dedicated selection rail, numeric rain labels and night indication confined to a narrow strip.
+- User approved the Full direction from PR #14. Extend this language to compact views: left-aligned copy, dedicated selection rail, labelled temperature/rain lanes in half views, and a rain-focused Quadrant with day-aware time labels. Full remains unchanged in this batch.
 - [x] Focus the decision chart to a readable 24-hour horizon around the recommendation.
 - [x] Replace dense night hatching and the heavy selection box with quieter, direct visual signals.
 - [x] Add an exact now marker and reduce repeated axis labels.
